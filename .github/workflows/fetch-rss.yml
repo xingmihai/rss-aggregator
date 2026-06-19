@@ -2,7 +2,7 @@ name: Fetch RSS
 
 on:
   schedule:
-    - cron: '*/30 * * * *'  # 每30分钟
+    - cron: '*/5 * * * *'  # 每30分钟
   push:
     branches: [main]
   workflow_dispatch:
