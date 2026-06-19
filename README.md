@@ -48,22 +48,18 @@ https://www.xmhai.cn/rss.xml,https://example.com/feed.xml
 
 进入仓库 **Actions → Fetch RSS → Run workflow**，手动运行一次，生成初始的 `articles.json`。
 
-### 4. 获取json链接
-
-这里就不用多说了吧
-
-### 5. 获取 API 地址
+### 4. 获取 API 地址
 
 部署完成后，你的 RSS API 地址为：
 
 ```
-https://<你的项目名>.<用户名>.pages.dev/articles.json
+/articles.json
 ```
 
 前端调用示例：
 
 ```javascript
-fetch('https://rss-aggregator.yourname.pages.dev/articles.json')
+fetch('/articles.json')
   .then(r => r.json())
   .then(articles => {
     articles.forEach(article => {
