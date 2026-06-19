@@ -3,7 +3,7 @@ name: Fetch RSS
 on:
   schedule:
     # 每 15 分钟运行一次
-    - cron: '*/15 * * * *'
+    - cron: '0 * * * *'
   workflow_dispatch:  # 支持手动触发
 
 jobs:
