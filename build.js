@@ -36,33 +36,33 @@ function parseRSS(xml, feedTitle) {
     link: extractTag(channel, 'link') || '#',
     description: extractTag(channel, 'description') || ''
   };
-  
+
   const articles = [];
   const regex = /<item>([\s\S]*?)<\/item>/g;
   let match;
-  
+
   while ((match = regex.exec(channel)) !== null) {
     const item = match[1];
     articles.push({
       title: decodeHtml(extractTag(item, 'title') || '无标题'),
-      author: feed.title,  // 修正拼写
+      auther: feed.title,  // 修正拼写
       date: formatDate(extractTag(item, 'pubDate') || ''),
       link: extractTag(item, 'link') || '#',
       content: cleanContent(extractTag(item, 'description') || '')
     });
   }
-  
+
   return articles;
 }
 
 async function main() {
   const fs = await import('fs');
-  
+
   // 确保输出目录存在
   if (!fs.existsSync('public')) fs.mkdirSync('public', { recursive: true });
-  
+
   const allArticles = [];
-  
+
   // 并行抓取所有 RSS
   const results = await Promise.allSettled(
     RSS_URLS.map(async url => {
@@ -75,15 +75,15 @@ async function main() {
       }
     })
   );
-  
+
   results.forEach(r => {
     if (r.status === 'fulfilled') allArticles.push(...r.value);
   });
-  
+
   // 按日期排序，取前 20 篇
   allArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
   const top20 = allArticles.slice(0, 20);
-  
+
   // 写入 JSON
   fs.writeFileSync('public/articles.json', JSON.stringify(top20, null, 2));
   console.log(`✅ Generated articles.json with ${top20.length} articles`);
