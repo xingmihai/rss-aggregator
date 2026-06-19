@@ -11,9 +11,9 @@
 | 每日请求限制 | 10 万次 | **无限制** |
 | CPU 时间限制 | 10 毫秒/请求 | **无限制** |
 | 成本 | 免费但有额度 | **完全免费** |
-| 实时性 | 实时 | 最多延迟 15 分钟 |
+| 实时性 | 实时 | 最多延迟 30 分钟 |
 
-对于 RSS 阅读场景，15 分钟延迟完全可以接受。
+对于 RSS 阅读场景，30 分钟延迟完全可以接受。
 
 ## 项目结构
 
@@ -55,7 +55,7 @@ https://www.xmhai.cn/rss.xml,https://example.com/feed.xml
 部署完成后，你的 RSS API 地址为：
 
 ```
-/articles.json
+/public/articles.json
 ```
 
 前端调用示例：
@@ -92,7 +92,7 @@ fetch('/articles.json')
 
 ## 定时频率
 
-默认每 **15 分钟** 抓取一次，可在 `.github/workflows/fetch-rss.yml` 中修改：
+默认每 **15 分钟** github 5到30分钟左右延迟，抓取一次，可在 `.github/workflows/fetch-rss.yml` 中修改：
 
 ```yaml
 on:
