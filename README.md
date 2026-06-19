@@ -48,21 +48,9 @@ https://www.xmhai.cn/rss.xml,https://example.com/feed.xml
 
 进入仓库 **Actions → Fetch RSS → Run workflow**，手动运行一次，生成初始的 `articles.json`。
 
-### 4. 部署到 Cloudflare Pages
+### 4. 获取json链接
 
-#### 方式一：Git 集成（推荐）
-
-1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com) → **Pages**
-2. **Create a project** → **Connect to Git**
-3. 选择你的仓库
-4. 构建设置：
-   - **Build command**: 留空（不需要构建）
-   - **Build output directory**: `public`
-5. 保存部署
-
-#### 方式二：Direct Upload
-
-如果你不想连接 GitHub，可以在 Actions 中直接推送到 Pages（需配置 `CLOUDFLARE_API_TOKEN`）。
+这里就不用多说了吧
 
 ### 5. 获取 API 地址
 
