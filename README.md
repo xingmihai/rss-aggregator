@@ -78,7 +78,7 @@ fetch('/articles.json')
 [
   {
     "title": "文章标题",
-    "author": "来源站点名称",
+    "auther": "来源站点名称",
     "date": "2026-06-20",
     "link": "https://example.com/article",
     "content": "文章摘要内容..."
