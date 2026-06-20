@@ -3,9 +3,7 @@ name: Fetch RSS
 on:
   schedule:
     - cron: '0 * * * *'  # 每小时的第0分钟执行一次
-  push:
-    branches: [main]
-  workflow_dispatch:
+  workflow_dispatch:  # 支持手动触发
 
 jobs:
   fetch:
@@ -21,11 +19,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Fetch and Build RSS
         run: node build.js
         env:
           RSS_URLS: ${{ secrets.RSS_URLS }}
+          MAX_ARTICLES: ${{ vars.MAX_ARTICLES }}
 
       - name: Commit and Push
         run: |
