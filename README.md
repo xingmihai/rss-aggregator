@@ -92,7 +92,7 @@ fetch('/articles.json')
 
 ## 定时频率
 
-默认每 **4 小时** github 4 小时抓取一次，可在 `.github/workflows/fetch-rss.yml` 中修改：
+默认每 **1 小时** github 1 小时抓取一次，可在 `.github/workflows/fetch-rss.yml` 中修改：
 
 ```yaml
 on:
