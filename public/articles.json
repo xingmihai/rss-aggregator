@@ -48,14 +48,6 @@
     "content": "起因我的网站一直是挂在netlify的，主域名挂在Cloudflare上，有WAF和BotFightMode防护，一直跑得挺安稳。前段时间搞了个bianrong.eu.org的备用域名绑上去，想着多个入口也没什么坏处。当时图省事，把备用域名挂在另一个CDN平台上进行「尝鲜测试」，没开付费套餐，自然也"
   },
   {
-    "title": "🦞 VH-Claw：便携式 OpenClaw 管理工具，零配置开箱即用",
-    "author": "韩小韩博客",
-    "auther": "韩小韩博客",
-    "date": "2026-04-11",
-    "link": "https://www.vvhan.com/article/vh-claw-openclaw",
-    "content": "专为中国用户打造的AIAgent便携式解决方案，插上U盘就能用，双击即运行，无需配置，真正便携！项目地址VH-Claw-GitHub📸截图展示为什么需要VH-Claw？在中国使用OpenClaw是个噩梦，VH-Claw解决所有问题问题传统方式VH-Claw的答案🚫GitHub连不上源码下不了，n"
-  },
-  {
     "title": "在termux安装blutter教程",
     "author": "笑的博客",
     "auther": "笑的博客",
@@ -158,5 +150,13 @@
     "date": "2025-12-13",
     "link": "https://blog.xiaow.qzz.io/article/free-domain-name-dpdns/",
     "content": "免费域名注册与订阅提醒系统搭建指南本服务永久免费，但需每180天续订一次（续订免费），续订后可再用365天。当剩余天数不足180天时可再次续费。总花费：0元人民币末尾附视频教程第一步：注册免费域名1.查询域名可用性访问DPDNS官网，在搜索框中输入想要的域名。注意：域名后缀必须为.dpdns.org"
+  },
+  {
+    "title": "【开源教程】从0开始，免费拥有属于自己的博客",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2025-12-12",
+    "link": "https://blog.xiaow.qzz.io/article/astro-theme-blog/",
+    "content": "前言说实话，想要搭建博客的话，有很多种方法但多少都有一些成本（比如服务器之类的），于是静态博客就出现了博客介绍开源项目：vhAstro-Theme一款基于Astro构建的优雅的响应式博客主题功能特性简洁的响应式设计流畅的动画和页面过渡丝滑的阻尼滚动效果顶部Banner两列布局阅读时间字数统计代码块语"
   }
 ]
