@@ -196,7 +196,7 @@ async function main() {
 
   console.log(`📡 开始抓取 ${RSS_URLS.length} 个 RSS 源...`);
 
-  const outputDir = path.join(__dirname, 'public');
+  const outputDir = path.join(__dirname, 'docs');
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
