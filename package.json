@@ -1,7 +1,7 @@
 {
   "name": "rss-aggregator-main",
   "version": "1.0.0",
-  "description": "[访问本站json](/public/articles.json)",
+  "description": "[访问本站json](/docs/articles.json)",
   "main": "build.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
