@@ -1,6 +1,6 @@
 # RSS 聚合器
 
-[访问本站json](/articles.json)
+[访问本站json](/docs/articles.json)
 
 一个零成本、无限制的 RSS 聚合方案，使用 GitHub Actions 定时抓取多个 RSS 源，生成静态 JSON 文件，通过 Cloudflare Pages 全球 CDN 分发。
 
