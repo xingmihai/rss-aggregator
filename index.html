@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- ===== SEO 优化 ===== -->
+  <title>RSS 聚合器 | rss-aggregator</title>
+  <meta name="description" content="零成本、无限制的 RSS 聚合方案，基于 GitHub Actions + Cloudflare Pages。" />
+  <link rel="canonical" href="https://rss.xmhai.cn/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="rss-aggregator" />
+  <meta property="og:title" content="RSS 聚合器" />
+  <meta property="og:description" content="使用 GitHub Actions 定时抓取 RSS，Cloudflare Pages 全球加速。" />
+  <meta property="og:url" content="https://rss.xmhai.cn/" />
+  <meta property="og:locale" content="zh_CN" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="RSS 聚合器" />
+  <meta name="twitter:description" content="零成本、无限制的 RSS 聚合方案" />
+
+  <!-- Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "rss-aggregator",
+    "description": "零成本、无限制的 RSS 聚合方案",
+    "url": "https://rss.xmhai.cn/",
+    "inLanguage": "zh-CN"
+  }
+  </script>
+
+  <!-- ===== 资源加载优化 ===== -->
+  <link rel="shortcut icon" type="image/x-icon"
+        href="https://q1.qlogo.cn/g?b=qq&nk=1498934815&s=1" />
+  <link rel="stylesheet" href="/assets/css/style.css?v=aa3f9d50728e19d06b6caf0500e16a9cf7acd386" />
+
+  <!-- Anchor.js（defer 不阻塞渲染） -->
+  <script defer
+    src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js"
+    integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg="
+    crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="https://rss.xmhai.cn/">rss-aggregator</a></h1>
+
+    <h1 id="rss-聚合器">RSS 聚合器</h1>
+
+    <p>
+      <a href="/docs/articles.json" aria-label="查看 RSS 聚合数据 JSON">
+        访问本站 JSON
+      </a>
+    </p>
+
+    <p>
+      一个零成本、无限制的 RSS 聚合方案，使用 GitHub Actions 定时抓取多个 RSS 源，
+      生成静态 JSON 文件，通过 Cloudflare Pages 全球 CDN 分发。
+    </p>
+
+    <!-- ===== 表格响应式 + 语义化 ===== -->
+    <h2 id="为什么不用-cloudflare-workers">为什么不用 Cloudflare Workers？</h2>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">对比项</th>
+            <th scope="col">Cloudflare Workers Free</th>
+            <th scope="col">本方案</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>每日请求限制</td>
+            <td>10 万次</td>
+            <td><strong>无限制</strong></td>
+          </tr>
+          <tr>
+            <td>CPU 时间限制</td>
+            <td>10 毫秒 / 请求</td>
+            <td><strong>无限制</strong></td>
+          </tr>
+          <tr>
+            <td>成本</td>
+            <td>免费但有额度</td>
+            <td><strong>完全免费</strong></td>
+          </tr>
+          <tr>
+            <td>实时性</td>
+            <td>实时</td>
+            <td>最多延迟 4 小时</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>对于 RSS 阅读场景，4 小时延迟完全可以接受。</p>
+
+    <!-- ===== 项目结构 ===== -->
+    <h2 id="项目结构">项目结构</h2>
+
+<pre><code>rss-aggregator/
+├── .github/
+│   └── workflows/
+│       └── fetch-rss.yml
+├── docs/
+│   └── articles.json
+├── build.js
+└── README.md
+</code></pre>
+
+    <!-- ===== 快速开始 ===== -->
+    <h2 id="快速开始">快速开始</h2>
+
+    <h3 id="1-fork-或创建仓库">1. Fork 或创建仓库</h3>
+    <p>
+      在 GitHub 新建公开仓库（如 <code>rss-aggregator</code>），上传本项目文件。
+    </p>
+
+    <h3 id="2-配置-rss-源">2. 配置 RSS 源</h3>
+    <p>
+      进入
+      <strong>Settings → Secrets and variables → Actions → New repository secret</strong>：
+    </p>
+    <ul>
+      <li><strong>Name</strong>: <code>RSS_URLS</code></li>
+      <li><strong>Value</strong>: RSS 地址，多个用英文逗号分隔</li>
+    </ul>
+
+<pre><code>https://www.xmhai.cn/rss.xml,https://example.com/feed.xml
+</code></pre>
+
+    <h3 id="3-手动触发首次运行">3. 手动触发首次运行</h3>
+    <p>
+      进入
+      <strong>Actions → Fetch RSS → Run workflow</strong>
+      手动运行一次，生成初始 <code>articles.json</code>。
+    </p>
+
+    <h3 id="4-获取-api-地址">4. 获取 API 地址</h3>
+    <p>部署完成后，RSS API 地址为：</p>
+
+<pre><code>/docs/articles.json
+</code></pre>
+
+    <p>前端调用示例：</p>
+
+<pre><code class="language-js">fetch('/docs/articles.json')
+  .then(r => r.json())
+  .then(articles => {
+    articles.forEach(article => {
+      console.log(article.title, article.date);
+    });
+  });
+</code></pre>
+
+    <!-- ===== 数据格式 ===== -->
+    <h2 id="数据格式">数据格式</h2>
+
+<pre><code class="language-json">[
+  {
+    "title": "文章标题",
+    "author": "来源站点名称",
+    "date": "2026-06-20",
+    "link": "https://example.com/article",
+    "content": "文章摘要内容..."
+  }
+]
+</code></pre>
+
+    <ul>
+      <li>最多返回 <strong>20 篇</strong> 最新文章</li>
+      <li>按发布日期倒序排列</li>
+      <li>单 RSS 源失败不影响整体输出</li>
+    </ul>
+
+    <!-- ===== 定时频率 ===== -->
+    <h2 id="定时频率">定时频率</h2>
+    <p>
+      默认每 <strong>15 分钟</strong> 抓取一次，可在
+      <code>.github/workflows/fetch-rss.yml</code> 中修改：
+    </p>
+
+<pre><code class="language-yaml">on:
+  schedule:
+    - cron: '*/15 * * * *'   # 每 15 分钟
+    # - cron: '0 * * * *'    # 每小时
+    # - cron: '0 */6 * * *'  # 每 6 小时
+</code></pre>
+
+    <!-- ===== 其他章节保持不变 ===== -->
+    <h2 id="支持的-rss-格式">支持的 RSS 格式</h2>
+    <p>
+      目前支持标准 RSS 2.0（<code>&lt;channel&gt;</code> +
+      <code>&lt;item&gt;</code>）。如需支持 Atom，可在
+      <code>build.js</code> 中扩展解析逻辑。
+    </p>
+
+    <h2 id="注意事项">注意事项</h2>
+    <ol>
+      <li>GitHub Actions：公开仓库免费</li>
+      <li>空提交优化：RSS 无变化时不会触发新部署</li>
+      <li>RSS 源稳定性：单源失败不影响其他源</li>
+    </ol>
+
+    <h2 id="license">License</h2>
+    <p>MIT</p>
+
+    <!-- ===== Footer ===== -->
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-right text-gray">
+      本项目开源 ·
+      <a href="https://github.com/xingmihai/rss-aggregator/edit/main/README.md">
+        改进此页面
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Anchor.js 初始化 -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      anchors.options = { placement: 'left', visible: 'hover' };
+      anchors.add('.markdown-body h1, .markdown-body h2, .markdown-body h3');
+    });
+  </script>
+</body>
+</html>
