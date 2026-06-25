@@ -1,235 +1,970 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <!-- ===== SEO 优化 ===== -->
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
   <title>RSS 聚合器 | rss-aggregator</title>
-  <meta name="description" content="零成本、无限制的 RSS 聚合方案，基于 GitHub Actions + Cloudflare Pages。" />
-  <link rel="canonical" href="https://rss.xmhai.cn/" />
-
+  <meta name="description" content="一个零成本、无限制的 RSS 聚合方案，使用 GitHub Actions 定时抓取多个 RSS 源，生成静态 JSON 文件，通过 Cloudflare Pages 全球 CDN 分发。">
+  <meta name="keywords" content="RSS, 聚合器, GitHub Actions, Cloudflare Pages, 免费">
+  
   <!-- Open Graph -->
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="rss-aggregator" />
-  <meta property="og:title" content="RSS 聚合器" />
-  <meta property="og:description" content="使用 GitHub Actions 定时抓取 RSS，Cloudflare Pages 全球加速。" />
-  <meta property="og:url" content="https://rss.xmhai.cn/" />
-  <meta property="og:locale" content="zh_CN" />
+  <meta property="og:title" content="RSS 聚合器">
+  <meta property="og:description" content="零成本、无限制的 RSS 聚合方案">
+  <meta property="og:url" content="https://rss.xmhai.cn/">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  
+  <!-- Favicon -->
+  <link rel="shortcut icon" type="image/x-icon" href="https://q1.qlogo.cn/g?b=qq&nk=1498934815&s=1">
+  
+  <style>
+    :root {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary: #21262d;
+      --border-color: #30363d;
+      --text-primary: #e6edf3;
+      --text-secondary: #8b949e;
+      --text-muted: #6e7681;
+      --accent: #58a6ff;
+      --accent-hover: #79b8ff;
+      --success: #3fb950;
+      --warning: #d29922;
+      --danger: #f85149;
+      --code-bg: #161b22;
+      --radius: 12px;
+      --radius-sm: 6px;
+      --shadow: 0 8px 24px rgba(0,0,0,0.4);
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      --font-mono: "SFMono-Regular", "Fira Code", "JetBrains Mono", Consolas, monospace;
+    }
 
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="RSS 聚合器" />
-  <meta name="twitter:description" content="零成本、无限制的 RSS 聚合方案" />
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  <!-- Schema.org -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "rss-aggregator",
-    "description": "零成本、无限制的 RSS 聚合方案",
-    "url": "https://rss.xmhai.cn/",
-    "inLanguage": "zh-CN"
-  }
-  </script>
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 80px;
+    }
 
-  <!-- ===== 资源加载优化 ===== -->
-  <link rel="shortcut icon" type="image/x-icon"
-        href="https://q1.qlogo.cn/g?b=qq&nk=1498934815&s=1" />
-  <link rel="stylesheet" href="/assets/css/style.css?v=aa3f9d50728e19d06b6caf0500e16a9cf7acd386" />
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.75;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
 
-  <!-- Anchor.js（defer 不阻塞渲染） -->
-  <script defer
-    src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js"
-    integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg="
-    crossorigin="anonymous"></script>
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    /* Selection */
+    ::selection {
+      background: rgba(88, 166, 255, 0.3);
+      color: var(--text-primary);
+    }
+
+    /* Layout */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 17, 23, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .site-header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-primary);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 18px;
+      transition: color 0.2s;
+    }
+
+    .logo:hover {
+      color: var(--accent);
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--accent), #a371f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+      position: relative;
+    }
+
+    .nav-links a:hover {
+      color: var(--text-primary);
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent);
+      transition: width 0.2s;
+      border-radius: 1px;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    /* Hero */
+    .hero {
+      padding: 80px 0 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(88, 166, 255, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 100px;
+      font-size: 13px;
+      color: var(--accent);
+      margin-bottom: 24px;
+      font-weight: 500;
+    }
+
+    .hero-badge .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 32px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-secondary);
+      border-color: var(--text-muted);
+    }
+
+    /* Main Content */
+    .main-content {
+      padding-bottom: 80px;
+    }
+
+    .content-section {
+      margin-bottom: 48px;
+    }
+
+    h2 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 48px 0 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    h2 .section-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      border: 1px solid var(--border-color);
+    }
+
+    h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 32px 0 16px;
+      color: var(--text-primary);
+    }
+
+    p {
+      margin-bottom: 16px;
+      color: var(--text-secondary);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    a:hover {
+      color: var(--accent-hover);
+      text-decoration: underline;
+    }
+
+    /* Table */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      margin: 24px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 14px 18px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      background: var(--bg-secondary);
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: rgba(255,255,255,0.02);
+    }
+
+    td strong {
+      color: var(--success);
+    }
+
+    /* Code Blocks */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      line-height: 1.6;
+      margin: 20px 0;
+      position: relative;
+    }
+
+    pre::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 36px;
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border-color);
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    }
+
+    pre code {
+      display: block;
+      padding-top: 20px;
+      color: var(--text-primary);
+      background: none;
+      font-family: inherit;
+    }
+
+    /* Syntax highlighting simulation */
+    .code-keyword { color: #ff7b72; }
+    .code-string { color: #a5d6ff; }
+    .code-comment { color: #8b949e; font-style: italic; }
+    .code-function { color: #d2a8ff; }
+    .code-number { color: #79c0ff; }
+    .code-punctuation { color: var(--text-secondary); }
+
+    code {
+      background: var(--bg-tertiary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+      color: var(--accent);
+      border: 1px solid var(--border-color);
+    }
+
+    pre code {
+      border: none;
+      padding: 0;
+      background: none;
+    }
+
+    /* Lists */
+    ul, ol {
+      margin: 16px 0;
+      padding-left: 24px;
+    }
+
+    li {
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+
+    li::marker {
+      color: var(--accent);
+    }
+
+    /* File Tree */
+    .file-tree {
+      background: var(--code-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 20px 24px;
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      line-height: 2;
+      margin: 20px 0;
+    }
+
+    .file-tree .dir {
+      color: var(--accent);
+    }
+
+    .file-tree .file {
+      color: var(--text-secondary);
+    }
+
+    .file-tree .comment {
+      color: var(--text-muted);
+    }
+
+    /* Steps */
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+    }
+
+    .steps > li {
+      position: relative;
+      padding-left: 56px;
+      margin-bottom: 32px;
+      min-height: 40px;
+    }
+
+    .steps > li::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 36px;
+      height: 36px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--accent);
+    }
+
+    .steps > li:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 18px;
+      top: 44px;
+      width: 2px;
+      height: calc(100% - 12px);
+      background: var(--border-color);
+    }
+
+    .steps h3 {
+      margin-top: 4px;
+      margin-bottom: 12px;
+    }
+
+    /* JSON Preview */
+    .json-preview {
+      background: var(--code-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.8;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+
+    .json-key { color: #7ee787; }
+    .json-string { color: #a5d6ff; }
+    .json-bracket { color: var(--text-secondary); }
+
+    /* Notice */
+    .notice {
+      background: rgba(88, 166, 255, 0.08);
+      border: 1px solid rgba(88, 166, 255, 0.2);
+      border-radius: var(--radius-sm);
+      padding: 16px 20px;
+      margin: 20px 0;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .notice-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .notice-content {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .notice-content strong {
+      color: var(--text-primary);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* Footer */
+    .site-footer {
+      border-top: 1px solid var(--border-color);
+      padding: 40px 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .site-footer a {
+      color: var(--text-secondary);
+    }
+
+    /* Back to top */
+    .back-to-top {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 44px;
+      height: 44px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+      z-index: 99;
+      font-size: 18px;
+    }
+
+    .back-to-top.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .back-to-top:hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 32px;
+      }
+      
+      .hero {
+        padding: 60px 0 40px;
+      }
+      
+      h2 {
+        font-size: 22px;
+      }
+      
+      .nav-links {
+        display: none;
+      }
+      
+      .container {
+        padding: 0 16px;
+      }
+      
+      pre {
+        padding: 16px;
+        font-size: 12px;
+      }
+      
+      th, td {
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+    }
+
+    /* Fade in animation */
+    .fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
-
 <body>
-  <div class="container-lg px-3 my-5 markdown-body">
 
-    <h1><a href="https://rss.xmhai.cn/">rss-aggregator</a></h1>
-
-    <h1 id="rss-聚合器">RSS 聚合器</h1>
-
-    <p>
-      <a href="/docs/articles.json" aria-label="查看 RSS 聚合数据 JSON">
-        访问本站 JSON
+  <header class="site-header">
+    <div class="container site-header-inner">
+      <a href="https://rss.xmhai.cn/" class="logo">
+        <div class="logo-icon">📡</div>
+        <span>rss-aggregator</span>
       </a>
-    </p>
-
-    <p>
-      一个零成本、无限制的 RSS 聚合方案，使用 GitHub Actions 定时抓取多个 RSS 源，
-      生成静态 JSON 文件，通过 Cloudflare Pages 全球 CDN 分发。
-    </p>
-
-    <!-- ===== 表格响应式 + 语义化 ===== -->
-    <h2 id="为什么不用-cloudflare-workers">为什么不用 Cloudflare Workers？</h2>
-
-    <div class="table-responsive">
-      <table>
-        <thead>
-          <tr>
-            <th scope="col">对比项</th>
-            <th scope="col">Cloudflare Workers Free</th>
-            <th scope="col">本方案</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>每日请求限制</td>
-            <td>10 万次</td>
-            <td><strong>无限制</strong></td>
-          </tr>
-          <tr>
-            <td>CPU 时间限制</td>
-            <td>10 毫秒 / 请求</td>
-            <td><strong>无限制</strong></td>
-          </tr>
-          <tr>
-            <td>成本</td>
-            <td>免费但有额度</td>
-            <td><strong>完全免费</strong></td>
-          </tr>
-          <tr>
-            <td>实时性</td>
-            <td>实时</td>
-            <td>最多延迟 4 小时</td>
-          </tr>
-        </tbody>
-      </table>
+      <nav class="nav-links">
+        <a href="#why">方案对比</a>
+        <a href="#structure">项目结构</a>
+        <a href="#quickstart">快速开始</a>
+        <a href="#format">数据格式</a>
+      </nav>
     </div>
+  </header>
 
-    <p>对于 RSS 阅读场景，4 小时延迟完全可以接受。</p>
-
-    <!-- ===== 项目结构 ===== -->
-    <h2 id="项目结构">项目结构</h2>
-
-<pre><code>rss-aggregator/
-├── .github/
-│   └── workflows/
-│       └── fetch-rss.yml
-├── docs/
-│   └── articles.json
-├── build.js
-└── README.md
-</code></pre>
-
-    <!-- ===== 快速开始 ===== -->
-    <h2 id="快速开始">快速开始</h2>
-
-    <h3 id="1-fork-或创建仓库">1. Fork 或创建仓库</h3>
-    <p>
-      在 GitHub 新建公开仓库（如 <code>rss-aggregator</code>），上传本项目文件。
-    </p>
-
-    <h3 id="2-配置-rss-源">2. 配置 RSS 源</h3>
-    <p>
-      进入
-      <strong>Settings → Secrets and variables → Actions → New repository secret</strong>：
-    </p>
-    <ul>
-      <li><strong>Name</strong>: <code>RSS_URLS</code></li>
-      <li><strong>Value</strong>: RSS 地址，多个用英文逗号分隔</li>
-    </ul>
-
-<pre><code>https://www.xmhai.cn/rss.xml,https://example.com/feed.xml
-</code></pre>
-
-    <h3 id="3-手动触发首次运行">3. 手动触发首次运行</h3>
-    <p>
-      进入
-      <strong>Actions → Fetch RSS → Run workflow</strong>
-      手动运行一次，生成初始 <code>articles.json</code>。
-    </p>
-
-    <h3 id="4-获取-api-地址">4. 获取 API 地址</h3>
-    <p>部署完成后，RSS API 地址为：</p>
-
-<pre><code>/docs/articles.json
-</code></pre>
-
-    <p>前端调用示例：</p>
-
-<pre><code class="language-js">fetch('/docs/articles.json')
-  .then(r => r.json())
-  .then(articles => {
-    articles.forEach(article => {
-      console.log(article.title, article.date);
-    });
-  });
-</code></pre>
-
-    <!-- ===== 数据格式 ===== -->
-    <h2 id="数据格式">数据格式</h2>
-
-<pre><code class="language-json">[
-  {
-    "title": "文章标题",
-    "author": "来源站点名称",
-    "date": "2026-06-20",
-    "link": "https://example.com/article",
-    "content": "文章摘要内容..."
-  }
-]
-</code></pre>
-
-    <ul>
-      <li>最多返回 <strong>20 篇</strong> 最新文章</li>
-      <li>按发布日期倒序排列</li>
-      <li>单 RSS 源失败不影响整体输出</li>
-    </ul>
-
-    <!-- ===== 定时频率 ===== -->
-    <h2 id="定时频率">定时频率</h2>
-    <p>
-      默认每 <strong>15 分钟</strong> 抓取一次，可在
-      <code>.github/workflows/fetch-rss.yml</code> 中修改：
-    </p>
-
-<pre><code class="language-yaml">on:
-  schedule:
-    - cron: '*/15 * * * *'   # 每 15 分钟
-    # - cron: '0 * * * *'    # 每小时
-    # - cron: '0 */6 * * *'  # 每 6 小时
-</code></pre>
-
-    <!-- ===== 其他章节保持不变 ===== -->
-    <h2 id="支持的-rss-格式">支持的 RSS 格式</h2>
-    <p>
-      目前支持标准 RSS 2.0（<code>&lt;channel&gt;</code> +
-      <code>&lt;item&gt;</code>）。如需支持 Atom，可在
-      <code>build.js</code> 中扩展解析逻辑。
-    </p>
-
-    <h2 id="注意事项">注意事项</h2>
-    <ol>
-      <li>GitHub Actions：公开仓库免费</li>
-      <li>空提交优化：RSS 无变化时不会触发新部署</li>
-      <li>RSS 源稳定性：单源失败不影响其他源</li>
-    </ol>
-
-    <h2 id="license">License</h2>
-    <p>MIT</p>
-
-    <!-- ===== Footer ===== -->
-    <div class="footer border-top border-gray-light mt-5 pt-3 text-right text-gray">
-      本项目开源 ·
-      <a href="https://github.com/xingmihai/rss-aggregator/edit/main/README.md">
-        改进此页面
-      </a>
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        零成本 · 无限制 · 自动化
+      </div>
+      <h1>RSS 聚合器</h1>
+      <p>使用 GitHub Actions 定时抓取多个 RSS 源，生成静态 JSON 文件，通过 Cloudflare Pages 全球 CDN 分发。</p>
+      <div class="hero-actions">
+        <a href="/docs/articles.json" class="btn btn-primary">
+          <span>📄</span> 访问 JSON API
+        </a>
+        <a href="https://github.com/xingmihai/rss-aggregator" class="btn btn-secondary" target="_blank" rel="noopener">
+          <span>⭐</span> GitHub 仓库
+        </a>
+      </div>
     </div>
+  </section>
 
-  </div>
+  <main class="main-content container fade-in">
 
-  <!-- Anchor.js 初始化 -->
+    <section class="content-section" id="why">
+      <h2>
+        <span class="section-icon">⚖️</span>
+        为什么不用 Cloudflare Workers？
+      </h2>
+      
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>对比项</th>
+              <th>Cloudflare Workers Free</th>
+              <th>本方案</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>每日请求限制</td>
+              <td>10 万次</td>
+              <td><strong>无限制</strong></td>
+            </tr>
+            <tr>
+              <td>CPU 时间限制</td>
+              <td>10 毫秒/请求</td>
+              <td><strong>无限制</strong></td>
+            </tr>
+            <tr>
+              <td>成本</td>
+              <td>免费但有额度</td>
+              <td><strong>完全免费</strong></td>
+            </tr>
+            <tr>
+              <td>实时性</td>
+              <td>实时</td>
+              <td>最多延迟 4 小时</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="notice">
+        <span class="notice-icon">💡</span>
+        <div class="notice-content">
+          <strong>提示</strong>
+          对于 RSS 阅读场景，4 小时延迟完全可以接受。
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section" id="structure">
+      <h2>
+        <span class="section-icon">🗂️</span>
+        项目结构
+      </h2>
+      
+      <div class="file-tree">
+<div class="dir">rss-aggregator/</div>
+├── <span class="dir">.github/</span>
+│   └── <span class="dir">workflows/</span>
+│       └── <span class="file">fetch-rss.yml</span>      <span class="comment"># GitHub Actions 工作流配置</span>
+├── <span class="dir">docs/</span>                     <span class="comment"># Cloudflare Pages 输出目录</span>
+│   └── <span class="file">articles.json</span>           <span class="comment"># 自动生成的 RSS 聚合数据</span>
+├── <span class="file">build.js</span>                    <span class="comment"># RSS 抓取与解析脚本</span>
+└── <span class="file">README.md</span>
+      </div>
+    </section>
+
+    <section class="content-section" id="quickstart">
+      <h2>
+        <span class="section-icon">🚀</span>
+        快速开始
+      </h2>
+
+      <ol class="steps">
+        <li>
+          <h3>Fork 或创建仓库</h3>
+          <p>在 GitHub 上新建一个公开仓库（如 <code>rss-aggregator</code>），将本项目文件上传。</p>
+        </li>
+        
+        <li>
+          <h3>配置 RSS 源</h3>
+          <p>进入仓库 <strong>Settings → Secrets and variables → Actions → New repository secret</strong>：</p>
+          <ul>
+            <li><strong>Name</strong>: <code>RSS_URLS</code></li>
+            <li><strong>Value</strong>: 你的 RSS 源地址，多个用逗号分隔</li>
+          </ul>
+          <p>示例：</p>
+          <pre><code>https://www.xmhai.cn/rss.xml,https://example.com/feed.xml</code></pre>
+        </li>
+        
+        <li>
+          <h3>手动触发首次运行</h3>
+          <p>进入仓库 <strong>Actions → Fetch RSS → Run workflow</strong>，手动运行一次，生成初始的 <code>articles.json</code>。</p>
+        </li>
+        
+        <li>
+          <h3>获取 API 地址</h3>
+          <p>部署完成后，你的 RSS API 地址为：</p>
+          <pre><code>/docs/articles.json</code></pre>
+          <p>前端调用示例：</p>
+          <pre><code><span class="code-function">fetch</span><span class="code-punctuation">(</span><span class="code-string">'/articles.json'</span><span class="code-punctuation">)</span>
+  <span class="code-punctuation">.</span><span class="code-function">then</span><span class="code-punctuation">(</span><span class="code-keyword">r</span> <span class="code-keyword">=&gt;</span> <span class="code-keyword">r</span><span class="code-punctuation">.</span><span class="code-function">json</span><span class="code-punctuation">())</span>
+  <span class="code-punctuation">.</span><span class="code-function">then</span><span class="code-punctuation">(</span><span class="code-keyword">articles</span> <span class="code-keyword">=&gt;</span> <span class="code-punctuation">{</span>
+    <span class="code-keyword">articles</span><span class="code-punctuation">.</span><span class="code-function">forEach</span><span class="code-punctuation">(</span><span class="code-keyword">article</span> <span class="code-keyword">=&gt;</span> <span class="code-punctuation">{</span>
+      <span class="code-keyword">console</span><span class="code-punctuation">.</span><span class="code-function">log</span><span class="code-punctuation">(</span><span class="code-keyword">article</span><span class="code-punctuation">.</span><span class="code-keyword">title</span><span class="code-punctuation">,</span> <span class="code-keyword">article</span><span class="code-punctuation">.</span><span class="code-keyword">date</span><span class="code-punctuation">);</span>
+    <span class="code-punctuation">});</span>
+  <span class="code-punctuation">});</span></code></pre>
+        </li>
+      </ol>
+    </section>
+
+    <section class="content-section" id="format">
+      <h2>
+        <span class="section-icon">📋</span>
+        数据格式
+      </h2>
+      
+      <p><code>articles.json</code> 返回数组，每篇文章包含：</p>
+      
+      <div class="json-preview">
+<span class="json-bracket">[</span>
+  <span class="json-bracket">{</span>
+    <span class="json-key">"title"</span><span class="json-bracket">:</span> <span class="json-string">"文章标题"</span><span class="json-bracket">,</span>
+    <span class="json-key">"author"</span><span class="json-bracket">:</span> <span class="json-string">"来源站点名称"</span><span class="json-bracket">,</span>
+    <span class="json-key">"date"</span><span class="json-bracket">:</span> <span class="json-string">"2026-06-20"</span><span class="json-bracket">,</span>
+    <span class="json-key">"link"</span><span class="json-bracket">:</span> <span class="json-string">"https://example.com/article"</span><span class="json-bracket">,</span>
+    <span class="json-key">"content"</span><span class="json-bracket">:</span> <span class="json-string">"文章摘要内容..."</span>
+  <span class="json-bracket">}</span>
+<span class="json-bracket">]</span>
+      </div>
+
+      <ul>
+        <li>最多返回 <strong>20 篇</strong> 最新文章</li>
+        <li>按发布日期倒序排列</li>
+        <li>单个 RSS 源失败不影响其他源</li>
+      </ul>
+    </section>
+
+    <section class="content-section">
+      <h2>
+        <span class="section-icon">⏰</span>
+        定时频率
+      </h2>
+      
+      <p>默认每 <strong>15 分钟</strong> 抓取一次，可在 <code>.github/workflows/fetch-rss.yml</code> 中修改：</p>
+      
+      <pre><code><span class="code-keyword">on</span><span class="code-punctuation">:</span>
+  <span class="code-keyword">schedule</span><span class="code-punctuation">:</span>
+    <span class="code-punctuation">-</span> <span class="code-keyword">cron</span><span class="code-punctuation">:</span> <span class="code-string">'*/15 * * * *'</span>   <span class="code-comment"># 每15分钟</span>
+    <span class="code-comment"># - cron: '0 * * * *'    # 每小时</span>
+    <span class="code-comment"># - cron: '0 */6 * * *'  # 每6小时</span></code></pre>
+    </section>
+
+    <section class="content-section">
+      <h2>
+        <span class="section-icon">📡</span>
+        支持的 RSS 格式
+      </h2>
+      
+      <p>目前支持标准 RSS 2.0 格式（<code>&lt;channel&gt;</code> + <code>&lt;item&gt;</code>）。如需支持 Atom 或其他格式，可在 <code>build.js</code> 中扩展解析逻辑。</p>
+    </section>
+
+    <section class="content-section">
+      <h2>
+        <span class="section-icon">⚠️</span>
+        注意事项
+      </h2>
+      
+      <ol>
+        <li><strong>GitHub Actions 免费额度</strong>：公开仓库免费</li>
+        <li><strong>空提交优化</strong>：如果 RSS 内容无变化，不会生成新的 commit，避免无意义部署</li>
+        <li><strong>RSS 源稳定性</strong>：某个源抓取失败会记录错误，不影响其他源和整体输出</li>
+      </ol>
+    </section>
+
+    <section class="content-section">
+      <h2>
+        <span class="section-icon">📄</span>
+        License
+      </h2>
+      <p>MIT</p>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>This site is open source. <a href="https://github.com/xingmihai/rss-aggregator/edit/main/README.md">Improve this page</a>.</p>
+    </div>
+  </footer>
+
+  <button class="back-to-top" id="backToTop" aria-label="回到顶部">↑</button>
+
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      anchors.options = { placement: 'left', visible: 'hover' };
-      anchors.add('.markdown-body h1, .markdown-body h2, .markdown-body h3');
+    // Back to top button
+    const backToTop = document.getElementById('backToTop');
+    
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 400) {
+        backToTop.classList.add('visible');
+      } else {
+        backToTop.classList.remove('visible');
+      }
+    });
+    
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // Add copy button to code blocks
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.textContent = '复制';
+      button.style.cssText = `
+        position: absolute;
+        top: 6px;
+        right: 8px;
+        padding: 4px 10px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        color: var(--text-secondary);
+        font-size: 12px;
+        cursor: pointer;
+        font-family: var(--font-sans);
+        transition: all 0.2s;
+        z-index: 2;
+      `;
+      
+      button.addEventListener('mouseenter', () => {
+        button.style.background = 'var(--bg-tertiary)';
+        button.style.color = 'var(--text-primary)';
+      });
+      
+      button.addEventListener('mouseleave', () => {
+        button.style.background = 'var(--bg-secondary)';
+        button.style.color = 'var(--text-secondary)';
+      });
+      
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code')?.textContent || pre.textContent;
+        try {
+          await navigator.clipboard.writeText(code);
+          button.textContent = '已复制!';
+          button.style.color = 'var(--success)';
+          setTimeout(() => {
+            button.textContent = '复制';
+            button.style.color = '';
+          }, 2000);
+        } catch (err) {
+          button.textContent = '复制失败';
+          setTimeout(() => {
+            button.textContent = '复制';
+          }, 2000);
+        }
+      });
+      
+      pre.style.position = 'relative';
+      pre.appendChild(button);
     });
   </script>
+
 </body>
 </html>
