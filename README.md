@@ -22,7 +22,7 @@ rss-aggregator/
 ├── .github/
 │   └── workflows/
 │       └── fetch-rss.yml      # GitHub Actions 工作流配置
-├── public/                     # Cloudflare Pages 输出目录
+├── docs/                     # Cloudflare Pages 输出目录
 │   └── articles.json           # 自动生成的 RSS 聚合数据
 ├── build.js                    # RSS 抓取与解析脚本
 └── README.md
@@ -55,7 +55,7 @@ https://www.xmhai.cn/rss.xml,https://example.com/feed.xml
 部署完成后，你的 RSS API 地址为：
 
 ```
-/public/articles.json
+/docs/articles.json
 ```
 
 前端调用示例：
