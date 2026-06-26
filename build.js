@@ -242,9 +242,9 @@ async function main() {
     title: item.title,
     author: item.author,
     auther: item.auther,
-    date: item.date ? item.date.split('T')[0] : '未知时间', // 输出简短的 YYYY-MM-DD，若前端需要精确时间可保留 item.date
+    date: item.date || '未知时间',
     link: item.link,
-    content: item.content.substring(0, 100), // 限制摘要100字，足够前端预览
+    content: item.content,
   }));
 
   const outputPath = path.join(outputDir, 'articles.json');
