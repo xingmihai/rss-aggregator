@@ -34,6 +34,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/articles.json
+          # 新增：提交所有 docs/*.json 文件（包括聚合文件和各源单独文件）
+          git add docs/*.json
           git diff --cached --quiet || git commit -m "Update RSS feed [$(date +%Y-%m-%d_%H:%M)]"
           git push
