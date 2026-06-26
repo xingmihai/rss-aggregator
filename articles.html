@@ -348,6 +348,78 @@
     .back-to-top.visible { opacity: 1; visibility: visible; }
     .back-to-top:hover { background: var(--accent); color: #fff; border-color: var(--accent); transform: translateY(-2px); }
 
+    /* ===== Page Transitions ===== */
+    .page-wrapper {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: pageEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes pageEnter {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Stagger children */
+    .stagger-children > * {
+      opacity: 0;
+      transform: translateY(16px);
+      animation: staggerIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+    .stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+    .stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+    .stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+    .stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+    .stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+    .stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
+    .stagger-children > *:nth-child(8) { animation-delay: 0.4s; }
+    .stagger-children > *:nth-child(9) { animation-delay: 0.45s; }
+    .stagger-children > *:nth-child(10) { animation-delay: 0.5s; }
+    @keyframes staggerIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Skeleton loading */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%);
+      background-size: 200% 100%;
+      animation: skeleton 1.5s ease-in-out infinite;
+      border-radius: var(--radius-sm);
+    }
+    @keyframes skeleton {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Card entrance */
+    .card-enter {
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+      animation: cardEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes cardEnter {
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Filter bar animation */
+    .filter-bar {
+      opacity: 0;
+      transform: translateY(-10px);
+      animation: filterEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+    }
+    @keyframes filterEnter {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Page title animation */
+    .page-title {
+      opacity: 0;
+      transform: translateX(-20px);
+      animation: titleEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+    }
+    @keyframes titleEnter {
+      to { opacity: 1; transform: translateX(0); }
+    }
+
     /* Responsive */
     @media (max-width: 640px) {
       .container { padding: 0 16px; }
@@ -361,7 +433,7 @@
     }
   </style>
 </head>
-<body>
+<body class="page-wrapper">
 
   <header class="site-header">
     <div class="container site-header-inner">
@@ -512,13 +584,13 @@
 
       articleCount.textContent = '共 ' + articles.length + ' 篇';
 
-      const html = articles.map(article => {
+      const html = articles.map((article, index) => {
         const title = article.title || '无标题';
         const author = article.author || article.auther || '未知来源';
         const date = formatDate(article.date);
         const link = article.link || '#';
         const summary = truncate(article.content, 120);
-        return '<a href="' + link + '" target="_blank" rel="noopener" class="article-card">' +
+        return '<a href="' + link + '" target="_blank" rel="noopener" class="article-card card-enter" style="animation-delay:' + (index * 0.05) + 's">' +
           '<div class="article-card-header">' +
             '<div class="article-title">' + title + '</div>' +
             '<span class="article-external">↗</span>' +
@@ -531,7 +603,7 @@
         '</a>';
       }).join('');
 
-      articleList.innerHTML = '<div class="article-list">' + html + '</div>';
+      articleList.innerHTML = '<div class="article-list stagger-children">' + html + '</div>';
     }
 
     function filterArticles() {
@@ -575,7 +647,15 @@
     }
 
     async function loadArticles() {
-      articleList.innerHTML = '<div class="loading-state"><div class="spinner"></div><span>正在加载文章...</span></div>';
+      articleList.innerHTML = '<div class="stagger-children" style="display:flex;flex-direction:column;gap:12px;">' +
+        Array(5).fill(0).map((_, i) => 
+          '<div class="card-enter" style="animation-delay:' + (i * 0.08) + 's;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-sm);padding:18px 20px;">' +
+            '<div class="skeleton" style="height:20px;width:70%;margin-bottom:12px;"></div>' +
+            '<div class="skeleton" style="height:14px;width:40%;margin-bottom:8px;"></div>' +
+            '<div class="skeleton" style="height:14px;width:90%;"></div>' +
+          '</div>'
+        ).join('') +
+      '</div>';
       try {
         const response = await fetch('/docs/articles.json');
         if (!response.ok) throw new Error('HTTP ' + response.status);
