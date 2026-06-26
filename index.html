@@ -95,9 +95,14 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      background: var(--bg-primary);
+      background: rgba(13, 17, 23, 0.75);
+      backdrop-filter: blur(12px) saturate(1.8);
+      -webkit-backdrop-filter: blur(12px) saturate(1.8);
       border-bottom: 1px solid var(--border-color);
       transition: background-color 0.3s, border-color 0.3s;
+    }
+    [data-theme="light"] .site-header {
+      background: rgba(255, 255, 255, 0.75);
     }
     .site-header-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
     .logo { display: flex; align-items: center; gap: 10px; color: var(--text-primary); text-decoration: none; font-weight: 700; font-size: 17px; transition: color 0.2s; cursor: pointer; }
@@ -251,7 +256,8 @@
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
       padding: 16px 18px;
-      transition: all 0.2s;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform, box-shadow;
     }
     .stat-card:hover {
       background: var(--bg-card-hover);
@@ -287,6 +293,12 @@
       border-radius: var(--radius-sm);
       padding: 20px;
       margin: 20px 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform, box-shadow;
+    }
+    .chart-container:hover {
+      border-color: var(--text-muted);
+      box-shadow: var(--shadow-lg);
     }
     .chart-title {
       font-size: 14px;
@@ -375,6 +387,7 @@
       padding: 18px 20px; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer;
       text-decoration: none; color: inherit; display: block; opacity: 0; transform: translateY(16px);
       position: relative;
+      will-change: transform, opacity, box-shadow;
     }
     .article-card.visible { opacity: 1; transform: translateY(0); }
     .article-card:hover { background: var(--bg-card-hover); border-color: var(--text-muted); transform: translateY(-3px); box-shadow: var(--shadow-lg); }
@@ -529,6 +542,12 @@
     .skeleton-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 18px 20px; }
     .skeleton-line { height: 16px; border-radius: 4px; background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%); background-size: 200% 100%; animation: skeleton 1.5s ease-in-out infinite; }
     @keyframes skeleton { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .skeleton-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 20px 0; }
+    .skeleton-stat { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px 18px; }
+    .skeleton-stat-line1 { height: 32px; width: 50%; border-radius: 4px; background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%); background-size: 200% 100%; animation: skeleton 1.5s ease-in-out infinite; margin-bottom: 8px; }
+    .skeleton-stat-line2 { height: 12px; width: 70%; border-radius: 4px; background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%); background-size: 200% 100%; animation: skeleton 1.5s ease-in-out infinite; }
+    .skeleton-chart { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 20px; margin: 20px 0; height: 200px; }
+    .skeleton-chart-inner { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%); background-size: 200% 100%; animation: skeleton 1.5s ease-in-out infinite; }
 
     /* ===== Footer ===== */
     .site-footer { border-top: 1px solid var(--border-color); padding: 32px 0; text-align: center; color: var(--text-muted); font-size: 13px; }
@@ -1621,6 +1640,7 @@
     });
 
     function showError() {
+      hideSkeleton();
       articleList.innerHTML = '<div class="error-state">' +
         '<div style="font-size:48px;margin-bottom:12px;">⚠️</div>' +
         '<div style="font-size:16px;font-weight:600;margin-bottom:4px;">加载失败</div>' +
@@ -1630,18 +1650,62 @@
       articleCount.textContent = '';
     }
 
+    function showSkeleton() {
+      // Stats skeleton
+      const statsSkeleton = '<div class="skeleton-stats">' +
+        '<div class="skeleton-stat"><div class="skeleton-stat-line1"></div><div class="skeleton-stat-line2"></div></div>' +
+        '<div class="skeleton-stat"><div class="skeleton-stat-line1"></div><div class="skeleton-stat-line2"></div></div>' +
+        '<div class="skeleton-stat"><div class="skeleton-stat-line1"></div><div class="skeleton-stat-line2"></div></div>' +
+        '<div class="skeleton-stat"><div class="skeleton-stat-line1"></div><div class="skeleton-stat-line2"></div></div>' +
+      '</div>';
+
+      // Charts skeleton
+      const chartsSkeleton = '<div class="chart-grid">' +
+        '<div class="skeleton-chart"><div class="skeleton-chart-inner"></div></div>' +
+        '<div class="skeleton-chart"><div class="skeleton-chart-inner"></div></div>' +
+        '<div class="skeleton-chart" style="grid-column:1/-1;"><div class="skeleton-chart-inner"></div></div>' +
+      '</div>';
+
+      // Articles skeleton
+      const articlesSkeleton = '<div class="article-list">' +
+        Array(6).fill('<div class="skeleton-card"><div class="skeleton-line" style="width:70%;margin-bottom:12px;"></div><div class="skeleton-line" style="width:40%;margin-bottom:8px;"></div><div class="skeleton-line" style="width:90%;"></div></div>').join('') +
+      '</div>';
+
+      statsPanel.style.display = 'none';
+      chartsContainer.style.display = 'none';
+
+      // Insert skeleton before articleList
+      const skeletonWrapper = document.createElement('div');
+      skeletonWrapper.id = 'skeletonWrapper';
+      skeletonWrapper.innerHTML = statsSkeleton + chartsSkeleton + articlesSkeleton;
+      articleList.parentNode.insertBefore(skeletonWrapper, articleList);
+
+      articleList.style.display = 'none';
+      filterBar.style.display = 'none';
+      viewToggle.style.display = 'none';
+    }
+
+    function hideSkeleton() {
+      const skeletonWrapper = document.getElementById('skeletonWrapper');
+      if (skeletonWrapper) skeletonWrapper.remove();
+      articleList.style.display = '';
+      statsPanel.style.display = 'grid';
+      chartsContainer.style.display = 'grid';
+      filterBar.style.display = 'flex';
+      viewToggle.style.display = 'flex';
+    }
+
     async function loadArticles() {
-      articleList.innerHTML = '<div class="loading-state"><div class="spinner"></div><span>正在加载文章...</span></div>';
+      showSkeleton();
       try {
         const response = await fetch('/docs/articles.json');
         if (!response.ok) throw new Error('HTTP ' + response.status);
         const articles = await response.json();
         allArticles = articles || [];
         populateSourceFilter(getSources(allArticles));
-        filterBar.style.display = 'flex';
-        viewToggle.style.display = 'flex';
         updateStats(allArticles);
         renderCharts(allArticles);
+        hideSkeleton();
         renderArticles(allArticles);
         articlesLoaded = true;
       } catch (err) {
