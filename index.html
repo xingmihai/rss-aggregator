@@ -274,19 +274,16 @@
 
   <main class="main-content container fade-in">
 
-    <section class="articles-section" id="articles">
-      <div class="section-header">
-        <div class="section-title">
-          <span class="section-icon">📰</span>
-          最新文章
-        </div>
-        <span class="article-count" id="articleCount"></span>
-      </div>
-      <div id="articleList">
-        <div class="loading-state">
-          <div class="spinner"></div>
-          <span>正在加载文章...</span>
-        </div>
+    <section class="content-section" id="articles">
+      <h2>
+        <span class="section-icon">📰</span>
+        最新文章
+      </h2>
+      <p>文章列表已迁移到独立页面，支持搜索、筛选和暗/亮主题切换。</p>
+      <div style="margin-top:16px;">
+        <a href="articles.html" class="btn btn-primary">
+          <span>📰</span> 查看文章列表
+        </a>
       </div>
     </section>
 
@@ -549,7 +546,6 @@
 
     // ===== Article List =====
     const articleList = document.getElementById('articleList');
-    const articleCount = document.getElementById('articleCount');
 
     function formatDate(dateStr) {
       if (!dateStr) return '';
@@ -619,24 +615,46 @@
 
     function showError() {
       articleList.innerHTML = '<div class="error-state">' +
-        '<div>⚠️ 加载失败，请检查网络连接</div>' +
-        '<button class="retry-btn" onclick="loadArticles()">重试</button>' +
+        '<div style="font-size: 32px; margin-bottom: 8px;">📭</div>' +
+        '<div style="font-weight: 600; margin-bottom: 6px;">暂无文章或加载失败</div>' +
+        '<div style="font-size: 13px; margin-bottom: 16px;">可能原因：<br>1. articles.json 尚未生成<br>2. GitHub Pages 部署路径配置不匹配<br>3. 网络连接问题</div>' +
+        '<button class="retry-btn" onclick="loadArticles()">重新加载</button>' +
       '</div>';
       articleCount.textContent = '';
+    }
+
+    async function tryFetch(path) {
+      try {
+        const response = await fetch(path, { cache: 'no-cache' });
+        if (response.ok) {
+          const data = await response.json();
+          return { success: true, data, path };
+        }
+      } catch (e) {}
+      return { success: false };
     }
 
     async function loadArticles() {
       articleList.innerHTML = '<div class="loading-state"><div class="spinner"></div><span>正在加载文章...</span></div>';
 
-      try {
-        const response = await fetch('/docs/articles.json');
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        const articles = await response.json();
-        renderArticles(articles);
-      } catch (err) {
-        console.error('Failed to load articles:', err);
-        showError();
+      // 尝试多个可能的路径（适配不同部署方式）
+      const paths = [
+        './articles.json',      // 从 docs/ 目录部署
+        'articles.json',        // 相对路径备选
+        '/docs/articles.json',  // 从根目录部署
+        '/articles.json'        // 绝对路径备选
+      ];
+
+      for (const path of paths) {
+        const result = await tryFetch(path);
+        if (result.success) {
+          console.log('Articles loaded from:', result.path);
+          renderArticles(result.data);
+          return;
+        }
       }
+
+      showError();
     }
 
     loadArticles();
