@@ -227,11 +227,115 @@
       .hero h1 { font-size: 24px; }
       .btn { padding: 9px 16px; font-size: 13px; }
     }
+    /* ===== Page Transitions ===== */
+    .page-wrapper {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: pageEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes pageEnter {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Stagger children animation */
+    .stagger-children > * {
+      opacity: 0;
+      transform: translateY(16px);
+      animation: staggerIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+    .stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+    .stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+    .stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+    .stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+    .stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+    .stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
+    .stagger-children > *:nth-child(8) { animation-delay: 0.4s; }
+    .stagger-children > *:nth-child(9) { animation-delay: 0.45s; }
+    .stagger-children > *:nth-child(10) { animation-delay: 0.5s; }
+    @keyframes staggerIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Hover lift effect for cards */
+    .hover-lift {
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+    }
+    .hover-lift:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Link underline animation */
+    .link-animate {
+      position: relative;
+      text-decoration: none;
+    }
+    .link-animate::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 1.5px;
+      background: var(--accent);
+      transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .link-animate:hover::after {
+      width: 100%;
+    }
+
+    /* Button ripple effect */
+    .btn {
+      position: relative;
+      overflow: hidden;
+    }
+    .btn::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.4s, height 0.4s;
+    }
+    .btn:active::after {
+      width: 200%;
+      height: 200%;
+    }
+
+    /* Section reveal on scroll */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Loading skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%);
+      background-size: 200% 100%;
+      animation: skeleton 1.5s ease-in-out infinite;
+      border-radius: var(--radius-sm);
+    }
+    @keyframes skeleton {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Fade in animation */
     .fade-in { animation: fadeIn 0.5s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
-<body>
+<body class="page-wrapper">
 
   <header class="site-header">
     <div class="container site-header-inner">
@@ -272,7 +376,7 @@
     </div>
   </section>
 
-  <main class="main-content container fade-in">
+  <main class="main-content container fade-in" id="mainContent">
 
     <section class="content-section" id="articles">
       <h2>
@@ -675,6 +779,21 @@
         const target = document.querySelector(this.getAttribute('href'));
         if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
+    });
+
+    // ===== Scroll Reveal =====
+    const revealElements = document.querySelectorAll('.content-section');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    revealElements.forEach(el => {
+      el.classList.add('reveal');
+      revealObserver.observe(el);
     });
 
     // ===== Copy buttons =====
