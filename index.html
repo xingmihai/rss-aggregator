@@ -742,9 +742,9 @@
         let faviconUrl = '';
         try {
           const urlObj = new URL(link);
-          faviconUrl = 'https://www.google.com/s2/favicons?domain=' + urlObj.hostname + '&sz=32';
+          faviconUrl = 'https://favicon.im/' + urlObj.hostname;
         } catch(e) {
-          faviconUrl = 'https://www.google.com/s2/favicons?domain=example.com&sz=32';
+          faviconUrl = 'https://favicon.im/example.com';
         }
 
         return '<a href="' + link + '" target="_blank" rel="noopener" class="article-card" style="animation-delay:' + (index * 0.05) + 's">' +
