@@ -3,22 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
   <title>RSS 聚合器 | rss-aggregator</title>
   <meta name="description" content="一个零成本、无限制的 RSS 聚合方案，使用 GitHub Actions 定时抓取多个 RSS 源，生成静态 JSON 文件，通过 Cloudflare Pages 全球 CDN 分发。">
   <meta name="keywords" content="RSS, 聚合器, GitHub Actions, Cloudflare Pages, 免费">
-  
-  <!-- Open Graph -->
+
   <meta property="og:title" content="RSS 聚合器">
   <meta property="og:description" content="零成本、无限制的 RSS 聚合方案">
   <meta property="og:url" content="https://rss.xmhai.cn/">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary">
-  
-  <!-- Favicon -->
+
   <link rel="shortcut icon" type="image/x-icon" href="https://q1.qlogo.cn/g?b=qq&nk=1498934815&s=1">
-  
+
   <style>
     :root {
       --bg-primary: #0d1117;
@@ -35,22 +33,17 @@
       --danger: #f85149;
       --code-bg: #161b22;
       --radius: 12px;
-      --radius-sm: 6px;
-      --shadow: 0 8px 24px rgba(0,0,0,0.4);
-      --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
+      --radius-sm: 8px;
       --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-      --font-mono: "SFMono-Regular", "Fira Code", "JetBrains Mono", Consolas, monospace;
+      --font-mono: "SFMono-Regular", "Fira Code", "JetBrains Mono", Consolas, "Liberation Mono", monospace;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html {
       scroll-behavior: smooth;
       scroll-padding-top: 80px;
+      -webkit-text-size-adjust: 100%;
     }
 
     body {
@@ -60,44 +53,33 @@
       line-height: 1.75;
       font-size: 16px;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: var(--bg-primary);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: var(--border-color);
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--text-muted);
-    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-    /* Selection */
     ::selection {
       background: rgba(88, 166, 255, 0.3);
       color: var(--text-primary);
     }
 
-    /* Layout */
     .container {
-      max-width: 900px;
+      max-width: 860px;
       margin: 0 auto;
-      padding: 0 24px;
+      padding: 0 20px;
     }
 
-    /* Header */
+    /* ===== Header ===== */
     .site-header {
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(13, 17, 23, 0.85);
-      backdrop-filter: blur(12px);
+      background: rgba(13, 17, 23, 0.92);
+      backdrop-filter: blur(16px) saturate(1.8);
+      -webkit-backdrop-filter: blur(16px) saturate(1.8);
       border-bottom: 1px solid var(--border-color);
     }
 
@@ -105,7 +87,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 64px;
+      height: 60px;
     }
 
     .logo {
@@ -115,42 +97,40 @@
       color: var(--text-primary);
       text-decoration: none;
       font-weight: 700;
-      font-size: 18px;
+      font-size: 17px;
       transition: color 0.2s;
     }
 
-    .logo:hover {
-      color: var(--accent);
-    }
+    .logo:hover { color: var(--accent); }
 
     .logo-icon {
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       border-radius: var(--radius-sm);
       background: linear-gradient(135deg, var(--accent), #a371f7);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 14px;
+      flex-shrink: 0;
     }
 
     .nav-links {
       display: flex;
-      gap: 24px;
+      gap: 20px;
     }
 
     .nav-links a {
       color: var(--text-secondary);
       text-decoration: none;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
       transition: color 0.2s;
       position: relative;
+      white-space: nowrap;
     }
 
-    .nav-links a:hover {
-      color: var(--text-primary);
-    }
+    .nav-links a:hover { color: var(--text-primary); }
 
     .nav-links a::after {
       content: '';
@@ -164,13 +144,11 @@
       border-radius: 1px;
     }
 
-    .nav-links a:hover::after {
-      width: 100%;
-    }
+    .nav-links a:hover::after { width: 100%; }
 
-    /* Hero */
+    /* ===== Hero ===== */
     .hero {
-      padding: 80px 0 60px;
+      padding: 64px 0 48px;
       text-align: center;
       position: relative;
       overflow: hidden;
@@ -179,12 +157,12 @@
     .hero::before {
       content: '';
       position: absolute;
-      top: -50%;
+      top: -40%;
       left: 50%;
       transform: translateX(-50%);
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(88, 166, 255, 0.08) 0%, transparent 70%);
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(88, 166, 255, 0.07) 0%, transparent 70%);
       pointer-events: none;
     }
 
@@ -192,13 +170,13 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 6px 14px;
+      padding: 5px 12px;
       background: var(--bg-tertiary);
       border: 1px solid var(--border-color);
       border-radius: 100px;
-      font-size: 13px;
+      font-size: 12px;
       color: var(--accent);
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       font-weight: 500;
     }
 
@@ -207,19 +185,19 @@
       height: 6px;
       background: var(--success);
       border-radius: 50%;
-      animation: pulse 2s infinite;
+      animation: pulse 2.5s infinite;
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
     }
 
     .hero h1 {
-      font-size: 48px;
+      font-size: 42px;
       font-weight: 800;
-      line-height: 1.2;
-      margin-bottom: 16px;
+      line-height: 1.15;
+      margin-bottom: 14px;
       background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -227,15 +205,16 @@
     }
 
     .hero p {
-      font-size: 18px;
+      font-size: 17px;
       color: var(--text-secondary);
-      max-width: 600px;
-      margin: 0 auto 32px;
+      max-width: 560px;
+      margin: 0 auto 28px;
+      line-height: 1.7;
     }
 
     .hero-actions {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       justify-content: center;
       flex-wrap: wrap;
     }
@@ -243,8 +222,8 @@
     .btn {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 12px 24px;
+      gap: 6px;
+      padding: 10px 20px;
       border-radius: var(--radius-sm);
       font-size: 14px;
       font-weight: 600;
@@ -253,6 +232,7 @@
       cursor: pointer;
       border: none;
       font-family: inherit;
+      white-space: nowrap;
     }
 
     .btn-primary {
@@ -263,7 +243,7 @@
     .btn-primary:hover {
       background: var(--accent-hover);
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
+      box-shadow: 0 4px 16px rgba(88, 166, 255, 0.25);
     }
 
     .btn-secondary {
@@ -277,48 +257,47 @@
       border-color: var(--text-muted);
     }
 
-    /* Main Content */
-    .main-content {
-      padding-bottom: 80px;
-    }
+    /* ===== Main Content ===== */
+    .main-content { padding-bottom: 60px; }
 
-    .content-section {
-      margin-bottom: 48px;
-    }
+    .content-section { margin-bottom: 40px; }
 
     h2 {
-      font-size: 28px;
+      font-size: 24px;
       font-weight: 700;
-      margin: 48px 0 20px;
-      padding-bottom: 12px;
+      margin: 40px 0 18px;
+      padding-bottom: 10px;
       border-bottom: 1px solid var(--border-color);
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      scroll-margin-top: 80px;
     }
 
     h2 .section-icon {
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       background: var(--bg-tertiary);
       border-radius: var(--radius-sm);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
+      font-size: 15px;
       border: 1px solid var(--border-color);
+      flex-shrink: 0;
     }
 
     h3 {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 600;
-      margin: 32px 0 16px;
+      margin: 28px 0 12px;
       color: var(--text-primary);
     }
 
     p {
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       color: var(--text-secondary);
+      word-wrap: break-word;
     }
 
     a {
@@ -327,27 +306,26 @@
       transition: color 0.2s;
     }
 
-    a:hover {
-      color: var(--accent-hover);
-      text-decoration: underline;
-    }
+    a:hover { color: var(--accent-hover); text-decoration: underline; }
 
-    /* Table */
+    /* ===== Table ===== */
     .table-wrapper {
       overflow-x: auto;
       border-radius: var(--radius-sm);
       border: 1px solid var(--border-color);
-      margin: 24px 0;
+      margin: 20px 0;
+      -webkit-overflow-scrolling: touch;
     }
 
     table {
       width: 100%;
+      min-width: 500px;
       border-collapse: collapse;
       font-size: 14px;
     }
 
     th, td {
-      padding: 14px 18px;
+      padding: 12px 16px;
       text-align: left;
       border-bottom: 1px solid var(--border-color);
     }
@@ -356,85 +334,173 @@
       background: var(--bg-secondary);
       font-weight: 600;
       color: var(--text-primary);
-      font-size: 13px;
+      font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      white-space: nowrap;
     }
 
-    tr:last-child td {
-      border-bottom: none;
-    }
+    tr:last-child td { border-bottom: none; }
 
-    tr:hover td {
-      background: rgba(255,255,255,0.02);
-    }
+    tr:hover td { background: rgba(255,255,255,0.02); }
 
-    td strong {
-      color: var(--success);
-    }
+    td strong { color: var(--success); }
 
-    /* Code Blocks */
-    pre {
-      background: var(--code-bg);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-sm);
-      padding: 20px;
-      overflow-x: auto;
-      font-family: var(--font-mono);
-      font-size: 13.5px;
-      line-height: 1.6;
-      margin: 20px 0;
+    /* ===== Code Blocks (FIXED) ===== */
+    .code-block-wrapper {
       position: relative;
+      margin: 18px 0;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      background: var(--code-bg);
     }
 
-    pre::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 36px;
+    .code-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 40px;
+      padding: 0 14px;
       background: var(--bg-tertiary);
       border-bottom: 1px solid var(--border-color);
-      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    }
+
+    .code-block-lang {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: var(--font-mono);
+    }
+
+    .code-block-header .copy-btn {
+      position: static;
+      padding: 4px 10px;
+      font-size: 11px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: all 0.2s;
+      line-height: 1;
+    }
+
+    .code-block-header .copy-btn:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border-color: var(--text-muted);
+    }
+
+    .code-block-header .copy-btn.copied {
+      color: var(--success);
+      border-color: var(--success);
+    }
+
+    pre {
+      margin: 0;
+      padding: 16px 18px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.7;
+      background: var(--code-bg);
+      -webkit-overflow-scrolling: touch;
     }
 
     pre code {
       display: block;
-      padding-top: 20px;
       color: var(--text-primary);
       background: none;
       font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
+      padding: 0;
+      white-space: pre;
+      word-wrap: normal;
+      word-break: normal;
+      tab-size: 2;
     }
 
-    /* Syntax highlighting simulation */
+    /* Inline code */
+    :not(pre) > code {
+      background: var(--bg-tertiary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      color: var(--accent);
+      border: 1px solid var(--border-color);
+      word-wrap: break-word;
+    }
+
+    /* Syntax colors */
     .code-keyword { color: #ff7b72; }
     .code-string { color: #a5d6ff; }
     .code-comment { color: #8b949e; font-style: italic; }
     .code-function { color: #d2a8ff; }
     .code-number { color: #79c0ff; }
     .code-punctuation { color: var(--text-secondary); }
+    .code-property { color: #7ee787; }
 
-    code {
-      background: var(--bg-tertiary);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: var(--font-mono);
-      font-size: 0.9em;
-      color: var(--accent);
+    /* ===== File Tree (FIXED) ===== */
+    .file-tree {
+      background: var(--code-bg);
       border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 18px 20px;
+      margin: 18px 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
-    pre code {
-      border: none;
+    .file-tree pre {
+      margin: 0;
       padding: 0;
       background: none;
+      overflow: visible;
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      line-height: 2;
+      color: var(--text-secondary);
     }
 
-    /* Lists */
+    .file-tree pre code {
+      white-space: pre;
+      word-wrap: normal;
+      word-break: normal;
+      color: var(--text-secondary);
+    }
+
+    .file-tree .dir { color: var(--accent); }
+    .file-tree .file { color: var(--text-secondary); }
+    .file-tree .comment { color: var(--text-muted); }
+
+    /* ===== JSON Preview ===== */
+    .json-preview {
+      background: var(--code-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 18px 20px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.8;
+      overflow-x: auto;
+      margin: 18px 0;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .json-key { color: #7ee787; }
+    .json-string { color: #a5d6ff; }
+    .json-bracket { color: var(--text-secondary); }
+
+    /* ===== Lists ===== */
     ul, ol {
-      margin: 16px 0;
-      padding-left: 24px;
+      margin: 14px 0;
+      padding-left: 22px;
     }
 
     li {
@@ -442,35 +508,9 @@
       color: var(--text-secondary);
     }
 
-    li::marker {
-      color: var(--accent);
-    }
+    li::marker { color: var(--accent); }
 
-    /* File Tree */
-    .file-tree {
-      background: var(--code-bg);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-sm);
-      padding: 20px 24px;
-      font-family: var(--font-mono);
-      font-size: 13.5px;
-      line-height: 2;
-      margin: 20px 0;
-    }
-
-    .file-tree .dir {
-      color: var(--accent);
-    }
-
-    .file-tree .file {
-      color: var(--text-secondary);
-    }
-
-    .file-tree .comment {
-      color: var(--text-muted);
-    }
-
-    /* Steps */
+    /* ===== Steps ===== */
     .steps {
       counter-reset: step;
       list-style: none;
@@ -479,9 +519,9 @@
 
     .steps > li {
       position: relative;
-      padding-left: 56px;
-      margin-bottom: 32px;
-      min-height: 40px;
+      padding-left: 50px;
+      margin-bottom: 28px;
+      min-height: 36px;
     }
 
     .steps > li::before {
@@ -490,8 +530,8 @@
       position: absolute;
       left: 0;
       top: 0;
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       background: var(--bg-tertiary);
       border: 1px solid var(--border-color);
       border-radius: 50%;
@@ -499,56 +539,39 @@
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 14px;
+      font-size: 13px;
       color: var(--accent);
     }
 
     .steps > li:not(:last-child)::after {
       content: '';
       position: absolute;
-      left: 18px;
-      top: 44px;
-      width: 2px;
-      height: calc(100% - 12px);
+      left: 16px;
+      top: 38px;
+      width: 1.5px;
+      height: calc(100% - 10px);
       background: var(--border-color);
     }
 
     .steps h3 {
-      margin-top: 4px;
-      margin-bottom: 12px;
+      margin-top: 2px;
+      margin-bottom: 10px;
     }
 
-    /* JSON Preview */
-    .json-preview {
-      background: var(--code-bg);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-sm);
-      padding: 20px;
-      font-family: var(--font-mono);
-      font-size: 13px;
-      line-height: 1.8;
-      overflow-x: auto;
-      margin: 20px 0;
-    }
-
-    .json-key { color: #7ee787; }
-    .json-string { color: #a5d6ff; }
-    .json-bracket { color: var(--text-secondary); }
-
-    /* Notice */
+    /* ===== Notice ===== */
     .notice {
-      background: rgba(88, 166, 255, 0.08);
-      border: 1px solid rgba(88, 166, 255, 0.2);
+      background: rgba(88, 166, 255, 0.06);
+      border: 1px solid rgba(88, 166, 255, 0.18);
       border-radius: var(--radius-sm);
-      padding: 16px 20px;
-      margin: 20px 0;
+      padding: 14px 18px;
+      margin: 18px 0;
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: flex-start;
     }
 
     .notice-icon {
-      font-size: 20px;
+      font-size: 18px;
       flex-shrink: 0;
       margin-top: 2px;
     }
@@ -556,34 +579,33 @@
     .notice-content {
       font-size: 14px;
       color: var(--text-secondary);
+      line-height: 1.7;
     }
 
     .notice-content strong {
       color: var(--text-primary);
       display: block;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
-    /* Footer */
+    /* ===== Footer ===== */
     .site-footer {
       border-top: 1px solid var(--border-color);
-      padding: 40px 0;
+      padding: 32px 0;
       text-align: center;
       color: var(--text-muted);
-      font-size: 14px;
+      font-size: 13px;
     }
 
-    .site-footer a {
-      color: var(--text-secondary);
-    }
+    .site-footer a { color: var(--text-secondary); }
 
-    /* Back to top */
+    /* ===== Back to top ===== */
     .back-to-top {
       position: fixed;
-      bottom: 24px;
-      right: 24px;
-      width: 44px;
-      height: 44px;
+      bottom: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
       background: var(--bg-tertiary);
       border: 1px solid var(--border-color);
       border-radius: 50%;
@@ -596,7 +618,8 @@
       visibility: hidden;
       transition: all 0.3s;
       z-index: 99;
-      font-size: 18px;
+      font-size: 16px;
+      backdrop-filter: blur(8px);
     }
 
     .back-to-top.visible {
@@ -611,46 +634,35 @@
       transform: translateY(-2px);
     }
 
-    /* Responsive */
-    @media (max-width: 768px) {
-      .hero h1 {
-        font-size: 32px;
-      }
-      
-      .hero {
-        padding: 60px 0 40px;
-      }
-      
-      h2 {
-        font-size: 22px;
-      }
-      
-      .nav-links {
-        display: none;
-      }
-      
-      .container {
-        padding: 0 16px;
-      }
-      
-      pre {
-        padding: 16px;
-        font-size: 12px;
-      }
-      
-      th, td {
-        padding: 10px 12px;
-        font-size: 13px;
-      }
+    /* ===== Responsive ===== */
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 30px; }
+      .hero { padding: 48px 0 36px; }
+      .hero p { font-size: 15px; }
+      h2 { font-size: 20px; }
+      .nav-links { display: none; }
+      .container { padding: 0 16px; }
+      pre { padding: 14px 16px; font-size: 12.5px; }
+      .code-block-header { padding: 0 12px; }
+      th, td { padding: 10px 12px; font-size: 13px; }
+      .steps > li { padding-left: 42px; }
+      .steps > li::before { width: 28px; height: 28px; font-size: 12px; }
+      .steps > li:not(:last-child)::after { left: 14px; }
+      .file-tree { padding: 14px 16px; }
+      .file-tree pre { font-size: 12.5px; line-height: 1.9; }
     }
 
-    /* Fade in animation */
+    @media (max-width: 400px) {
+      .hero h1 { font-size: 26px; }
+      .btn { padding: 9px 16px; font-size: 13px; }
+    }
+
     .fade-in {
-      animation: fadeIn 0.6s ease-out;
+      animation: fadeIn 0.5s ease-out;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
+      from { opacity: 0; transform: translateY(16px); }
       to { opacity: 1; transform: translateY(0); }
     }
   </style>
@@ -698,7 +710,7 @@
         <span class="section-icon">⚖️</span>
         为什么不用 Cloudflare Workers？
       </h2>
-      
+
       <div class="table-wrapper">
         <table>
           <thead>
@@ -747,16 +759,16 @@
         <span class="section-icon">🗂️</span>
         项目结构
       </h2>
-      
+
       <div class="file-tree">
-<div class="dir">rss-aggregator/</div>
+        <pre><code><span class="dir">rss-aggregator/</span>
 ├── <span class="dir">.github/</span>
 │   └── <span class="dir">workflows/</span>
 │       └── <span class="file">fetch-rss.yml</span>      <span class="comment"># GitHub Actions 工作流配置</span>
 ├── <span class="dir">docs/</span>                     <span class="comment"># Cloudflare Pages 输出目录</span>
 │   └── <span class="file">articles.json</span>           <span class="comment"># 自动生成的 RSS 聚合数据</span>
 ├── <span class="file">build.js</span>                    <span class="comment"># RSS 抓取与解析脚本</span>
-└── <span class="file">README.md</span>
+└── <span class="file">README.md</span></code></pre>
       </div>
     </section>
 
@@ -771,7 +783,7 @@
           <h3>Fork 或创建仓库</h3>
           <p>在 GitHub 上新建一个公开仓库（如 <code>rss-aggregator</code>），将本项目文件上传。</p>
         </li>
-        
+
         <li>
           <h3>配置 RSS 源</h3>
           <p>进入仓库 <strong>Settings → Secrets and variables → Actions → New repository secret</strong>：</p>
@@ -780,26 +792,44 @@
             <li><strong>Value</strong>: 你的 RSS 源地址，多个用逗号分隔</li>
           </ul>
           <p>示例：</p>
-          <pre><code>https://www.xmhai.cn/rss.xml,https://example.com/feed.xml</code></pre>
+          <div class="code-block-wrapper">
+            <div class="code-block-header">
+              <span class="code-block-lang">Text</span>
+              <button class="copy-btn" data-code>复制</button>
+            </div>
+            <pre><code>https://www.xmhai.cn/rss.xml,https://example.com/feed.xml</code></pre>
+          </div>
         </li>
-        
+
         <li>
           <h3>手动触发首次运行</h3>
           <p>进入仓库 <strong>Actions → Fetch RSS → Run workflow</strong>，手动运行一次，生成初始的 <code>articles.json</code>。</p>
         </li>
-        
+
         <li>
           <h3>获取 API 地址</h3>
           <p>部署完成后，你的 RSS API 地址为：</p>
-          <pre><code>/docs/articles.json</code></pre>
+          <div class="code-block-wrapper">
+            <div class="code-block-header">
+              <span class="code-block-lang">Path</span>
+              <button class="copy-btn" data-code>复制</button>
+            </div>
+            <pre><code>/docs/articles.json</code></pre>
+          </div>
           <p>前端调用示例：</p>
-          <pre><code><span class="code-function">fetch</span><span class="code-punctuation">(</span><span class="code-string">'/articles.json'</span><span class="code-punctuation">)</span>
+          <div class="code-block-wrapper">
+            <div class="code-block-header">
+              <span class="code-block-lang">JavaScript</span>
+              <button class="copy-btn" data-code>复制</button>
+            </div>
+            <pre><code><span class="code-function">fetch</span><span class="code-punctuation">(</span><span class="code-string">'/articles.json'</span><span class="code-punctuation">)</span>
   <span class="code-punctuation">.</span><span class="code-function">then</span><span class="code-punctuation">(</span><span class="code-keyword">r</span> <span class="code-keyword">=&gt;</span> <span class="code-keyword">r</span><span class="code-punctuation">.</span><span class="code-function">json</span><span class="code-punctuation">())</span>
   <span class="code-punctuation">.</span><span class="code-function">then</span><span class="code-punctuation">(</span><span class="code-keyword">articles</span> <span class="code-keyword">=&gt;</span> <span class="code-punctuation">{</span>
     <span class="code-keyword">articles</span><span class="code-punctuation">.</span><span class="code-function">forEach</span><span class="code-punctuation">(</span><span class="code-keyword">article</span> <span class="code-keyword">=&gt;</span> <span class="code-punctuation">{</span>
       <span class="code-keyword">console</span><span class="code-punctuation">.</span><span class="code-function">log</span><span class="code-punctuation">(</span><span class="code-keyword">article</span><span class="code-punctuation">.</span><span class="code-keyword">title</span><span class="code-punctuation">,</span> <span class="code-keyword">article</span><span class="code-punctuation">.</span><span class="code-keyword">date</span><span class="code-punctuation">);</span>
     <span class="code-punctuation">});</span>
   <span class="code-punctuation">});</span></code></pre>
+          </div>
         </li>
       </ol>
     </section>
@@ -809,9 +839,9 @@
         <span class="section-icon">📋</span>
         数据格式
       </h2>
-      
+
       <p><code>articles.json</code> 返回数组，每篇文章包含：</p>
-      
+
       <div class="json-preview">
 <span class="json-bracket">[</span>
   <span class="json-bracket">{</span>
@@ -836,14 +866,20 @@
         <span class="section-icon">⏰</span>
         定时频率
       </h2>
-      
+
       <p>默认每 <strong>15 分钟</strong> 抓取一次，可在 <code>.github/workflows/fetch-rss.yml</code> 中修改：</p>
-      
-      <pre><code><span class="code-keyword">on</span><span class="code-punctuation">:</span>
+
+      <div class="code-block-wrapper">
+        <div class="code-block-header">
+          <span class="code-block-lang">YAML</span>
+          <button class="copy-btn" data-code>复制</button>
+        </div>
+        <pre><code><span class="code-keyword">on</span><span class="code-punctuation">:</span>
   <span class="code-keyword">schedule</span><span class="code-punctuation">:</span>
     <span class="code-punctuation">-</span> <span class="code-keyword">cron</span><span class="code-punctuation">:</span> <span class="code-string">'*/15 * * * *'</span>   <span class="code-comment"># 每15分钟</span>
     <span class="code-comment"># - cron: '0 * * * *'    # 每小时</span>
     <span class="code-comment"># - cron: '0 */6 * * *'  # 每6小时</span></code></pre>
+      </div>
     </section>
 
     <section class="content-section">
@@ -851,7 +887,7 @@
         <span class="section-icon">📡</span>
         支持的 RSS 格式
       </h2>
-      
+
       <p>目前支持标准 RSS 2.0 格式（<code>&lt;channel&gt;</code> + <code>&lt;item&gt;</code>）。如需支持 Atom 或其他格式，可在 <code>build.js</code> 中扩展解析逻辑。</p>
     </section>
 
@@ -860,7 +896,7 @@
         <span class="section-icon">⚠️</span>
         注意事项
       </h2>
-      
+
       <ol>
         <li><strong>GitHub Actions 免费额度</strong>：公开仓库免费</li>
         <li><strong>空提交优化</strong>：如果 RSS 内容无变化，不会生成新的 commit，避免无意义部署</li>
@@ -887,82 +923,44 @@
   <button class="back-to-top" id="backToTop" aria-label="回到顶部">↑</button>
 
   <script>
-    // Back to top button
+    // Back to top
     const backToTop = document.getElementById('backToTop');
-    
     window.addEventListener('scroll', () => {
-      if (window.scrollY > 400) {
-        backToTop.classList.add('visible');
-      } else {
-        backToTop.classList.remove('visible');
-      }
+      backToTop.classList.toggle('visible', window.scrollY > 400);
     });
-    
     backToTop.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // Smooth scroll for anchor links
+    // Smooth scroll for anchors
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function(e) {
         e.preventDefault();
         const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     });
 
-    // Add copy button to code blocks
-    document.querySelectorAll('pre').forEach(pre => {
-      const button = document.createElement('button');
-      button.textContent = '复制';
-      button.style.cssText = `
-        position: absolute;
-        top: 6px;
-        right: 8px;
-        padding: 4px 10px;
-        background: var(--bg-secondary);
-        border: 1px solid var(--border-color);
-        border-radius: 4px;
-        color: var(--text-secondary);
-        font-size: 12px;
-        cursor: pointer;
-        font-family: var(--font-sans);
-        transition: all 0.2s;
-        z-index: 2;
-      `;
-      
-      button.addEventListener('mouseenter', () => {
-        button.style.background = 'var(--bg-tertiary)';
-        button.style.color = 'var(--text-primary)';
-      });
-      
-      button.addEventListener('mouseleave', () => {
-        button.style.background = 'var(--bg-secondary)';
-        button.style.color = 'var(--text-secondary)';
-      });
-      
-      button.addEventListener('click', async () => {
-        const code = pre.querySelector('code')?.textContent || pre.textContent;
+    // Copy buttons
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const wrapper = btn.closest('.code-block-wrapper');
+        const code = wrapper.querySelector('pre code').textContent;
         try {
           await navigator.clipboard.writeText(code);
-          button.textContent = '已复制!';
-          button.style.color = 'var(--success)';
+          const original = btn.textContent;
+          btn.textContent = '已复制!';
+          btn.classList.add('copied');
           setTimeout(() => {
-            button.textContent = '复制';
-            button.style.color = '';
+            btn.textContent = original;
+            btn.classList.remove('copied');
           }, 2000);
         } catch (err) {
-          button.textContent = '复制失败';
-          setTimeout(() => {
-            button.textContent = '复制';
-          }, 2000);
+          const original = btn.textContent;
+          btn.textContent = '复制失败';
+          setTimeout(() => { btn.textContent = original; }, 2000);
         }
       });
-      
-      pre.style.position = 'relative';
-      pre.appendChild(button);
     });
   </script>
 
