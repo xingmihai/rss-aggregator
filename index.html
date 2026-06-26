@@ -286,6 +286,95 @@
       font-weight: 500;
     }
 
+    /* ===== Source Health ===== */
+    .source-health {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 16px 0;
+    }
+    .health-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      transition: all 0.2s;
+    }
+    .health-item:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--text-muted);
+    }
+    .health-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .health-dot.active { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .health-dot.warning { background: var(--warning); box-shadow: 0 0 6px var(--warning); }
+    .health-dot.error { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+    .health-name {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    .health-status {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* ===== Trend Chart ===== */
+    .trend-chart-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    /* ===== Tag Cloud ===== */
+    .tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 0;
+      padding: 12px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+    }
+    .tag-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px 10px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 100px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .tag-item:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .tag-count {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
     /* ===== Charts ===== */
     .chart-container {
       background: var(--bg-card);
@@ -542,6 +631,31 @@
     .skeleton-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 18px 20px; }
     .skeleton-line { height: 16px; border-radius: 4px; background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%); background-size: 200% 100%; animation: skeleton 1.5s ease-in-out infinite; }
     @keyframes skeleton { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* ===== Scroll Reveal Animation ===== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.05s; }
+    .reveal-delay-2 { transition-delay: 0.1s; }
+    .reveal-delay-3 { transition-delay: 0.15s; }
+    .reveal-delay-4 { transition-delay: 0.2s; }
+    .reveal-delay-5 { transition-delay: 0.25s; }
+    .reveal-scale {
+      opacity: 0;
+      transform: scale(0.92);
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal-scale.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
     .skeleton-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 20px 0; }
     .skeleton-stat { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px 18px; }
     .skeleton-stat-line1 { height: 32px; width: 50%; border-radius: 4px; background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%); background-size: 200% 100%; animation: skeleton 1.5s ease-in-out infinite; margin-bottom: 8px; }
@@ -956,19 +1070,19 @@
 
       <!-- Stats Panel -->
       <div class="stats-panel" id="statsPanel" style="display:none;">
-        <div class="stat-card">
+        <div class="stat-card reveal">
           <div class="stat-value" id="statTotal">0</div>
           <div class="stat-label">文章总数</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card reveal reveal-delay-1">
           <div class="stat-value" id="statSources">0</div>
           <div class="stat-label">RSS 源数</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card reveal reveal-delay-2">
           <div class="stat-value" id="statToday">0</div>
           <div class="stat-label">今日更新</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card reveal reveal-delay-3">
           <div class="stat-value" id="statLatest">--</div>
           <div class="stat-label">最近更新</div>
         </div>
@@ -976,11 +1090,11 @@
 
       <!-- Charts -->
       <div class="chart-grid" id="chartsContainer" style="display:none;">
-        <div class="chart-container">
+        <div class="chart-container reveal">
           <div class="chart-title"><span class="icon">🥧</span> 各源文章占比</div>
           <div id="pieChart"></div>
         </div>
-        <div class="chart-container">
+        <div class="chart-container reveal reveal-delay-1">
           <div class="chart-title"><span class="icon">📊</span> 各源文章数量</div>
           <div id="barChart"></div>
         </div>
@@ -988,6 +1102,24 @@
           <div class="chart-title"><span class="icon">📈</span> 来源更新频率 (近7天)</div>
           <div id="freqChart"></div>
         </div>
+      </div>
+
+      <!-- Source Health -->
+      <div class="trend-chart-container" id="sourceHealthContainer" style="display:none;">
+        <div class="chart-title"><span class="icon">💓</span> RSS 源健康状态</div>
+        <div class="source-health" id="sourceHealth"></div>
+      </div>
+
+      <!-- Trend Chart -->
+      <div class="trend-chart-container" id="trendContainer" style="display:none;">
+        <div class="chart-title"><span class="icon">📉</span> 30天阅读趋势</div>
+        <div id="trendChart"></div>
+      </div>
+
+      <!-- Tag Cloud -->
+      <div class="chart-container" id="tagCloudContainer" style="display:none;">
+        <div class="chart-title"><span class="icon">🏷️</span> 热门标签</div>
+        <div class="tag-cloud" id="tagCloud"></div>
       </div>
 
       <div class="filter-bar" id="filterBar" style="display:none;">
@@ -1485,6 +1617,185 @@
       renderBarChart(sourceCounts);
       renderFreqChart(articles);
       chartsContainer.style.display = 'grid';
+
+      // Render new features
+      renderSourceHealth(articles);
+      renderTrendChart(articles);
+      renderTagCloud(articles);
+
+      // Trigger scroll reveal
+      setTimeout(initScrollReveal, 100);
+    }
+
+    // ===== Scroll Reveal =====
+    function initScrollReveal() {
+      const reveals = document.querySelectorAll('.reveal, .reveal-scale');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+      reveals.forEach(el => observer.observe(el));
+    }
+
+    // ===== Source Health =====
+    function renderSourceHealth(articles) {
+      const container = document.getElementById('sourceHealth');
+      const sources = getSources(articles);
+      const now = new Date();
+      const threeDays = 3 * 24 * 60 * 60 * 1000;
+      const week = 7 * 24 * 60 * 60 * 1000;
+
+      const healthData = sources.map(src => {
+        const srcArticles = articles.filter(a => (a.author || a.auther || '未知来源') === src);
+        const latest = srcArticles.length > 0 ? new Date(srcArticles[0].date) : null;
+        if (!latest || isNaN(latest)) return { name: src, status: 'unknown', diff: Infinity };
+        const diff = now - latest;
+        let status = 'active';
+        if (diff > week) status = 'error';
+        else if (diff > threeDays) status = 'warning';
+        return { name: src, status, diff, count: srcArticles.length };
+      });
+
+      const html = healthData.map(h => {
+        const statusText = h.status === 'active' ? '正常' : h.status === 'warning' ? '3天未更新' : '7天未更新';
+        const statusClass = h.status === 'active' ? 'active' : h.status === 'warning' ? 'warning' : 'error';
+        return '<div class="health-item">' +
+          '<span class="health-dot ' + statusClass + '"></span>' +
+          '<span class="health-name">' + h.name + '</span>' +
+          '<span class="health-status">' + statusText + ' · ' + h.count + '篇</span>' +
+        '</div>';
+      }).join('');
+
+      container.innerHTML = html;
+      document.getElementById('sourceHealthContainer').style.display = 'block';
+    }
+
+    // ===== Trend Chart (30 days) =====
+    function renderTrendChart(articles) {
+      const container = document.getElementById('trendChart');
+      if (!articles.length) { container.innerHTML = ''; return; }
+
+      const days = 30;
+      const now = new Date();
+      const dayLabels = [];
+      const dayCounts = [];
+
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        const label = (d.getMonth() + 1) + '/' + d.getDate();
+        dayLabels.push(label);
+        const dayStr = d.toDateString();
+        dayCounts.push(articles.filter(a => {
+          const ad = new Date(a.date);
+          return !isNaN(ad) && ad.toDateString() === dayStr;
+        }).length);
+      }
+
+      const maxVal = Math.max(1, ...dayCounts);
+      const isMobile = window.innerWidth <= 640;
+      const chartW = isMobile ? 340 : 600;
+      const chartH = isMobile ? 160 : 200;
+      const padL = isMobile ? 28 : 40;
+      const padR = isMobile ? 8 : 16;
+      const padT = isMobile ? 12 : 16;
+      const padB = isMobile ? 28 : 32;
+      const plotW = chartW - padL - padR;
+      const plotH = chartH - padT - padB;
+      const stepX = plotW / (dayLabels.length - 1);
+
+      let svg = '<svg class="svg-chart" viewBox="0 0 ' + chartW + ' ' + chartH + '" style="width:100%;">';
+
+      // Grid lines
+      for (let i = 0; i <= 4; i++) {
+        const y = padT + (plotH / 4) * i;
+        const val = Math.round(maxVal * (1 - i / 4));
+        svg += '<line x1="' + padL + '" y1="' + y + '" x2="' + (chartW - padR) + '" y2="' + y + '" class="svg-chart-gridline"/>';
+        svg += '<text x="' + (padL - 4) + '" y="' + (y + 3) + '" text-anchor="end" class="svg-chart-label" font-size="9">' + val + '</text>';
+      }
+
+      // Area fill
+      let areaPath = 'M ' + padL + ' ' + (padT + plotH);
+      const points = [];
+      dayCounts.forEach((count, i) => {
+        const x = padL + i * stepX;
+        const y = padT + plotH - (count / maxVal) * plotH;
+        points.push({x, y});
+        areaPath += ' L ' + x + ' ' + y;
+      });
+      areaPath += ' L ' + (padL + plotW) + ' ' + (padT + plotH) + ' Z';
+
+      svg += '<path d="' + areaPath + '" fill="var(--accent-soft)" opacity="0.5"/>';
+
+      // Line
+      let linePath = '';
+      points.forEach((p, i) => {
+        linePath += (i === 0 ? 'M' : 'L') + ' ' + p.x + ' ' + p.y;
+      });
+      svg += '<path d="' + linePath + '" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+
+      // Points
+      points.forEach((p, i) => {
+        if (dayCounts[i] > 0) {
+          svg += '<circle cx="' + p.x + '" cy="' + p.y + '" r="3" fill="var(--accent)" stroke="var(--bg-primary)" stroke-width="2"/>';
+        }
+      });
+
+      // X labels - show every 5th day on mobile
+      dayLabels.forEach((label, i) => {
+        const show = !isMobile || i % 5 === 0 || i === dayLabels.length - 1;
+        if (show) {
+          const x = padL + i * stepX;
+          svg += '<text x="' + x + '" y="' + (chartH - 8) + '" text-anchor="middle" class="svg-chart-label" font-size="9">' + label + '</text>';
+        }
+      });
+
+      svg += '</svg>';
+      container.innerHTML = svg;
+      document.getElementById('trendContainer').style.display = 'block';
+    }
+
+    // ===== Tag Cloud =====
+    function renderTagCloud(articles) {
+      const container = document.getElementById('tagCloud');
+      if (!articles.length) { container.innerHTML = ''; return; }
+
+      // Extract keywords from titles
+      const stopWords = new Set(['的', '了', '是', '在', '我', '有', '和', '就', '不', '人', '都', '一', '一个', '上', '也', '很', '到', '说', '要', '去', '你', '会', '着', '没有', '看', '好', '自己', '这', '那', '吗', '吧', '呢', '啊', '哦', '嗯', '与', '及', '等', '或', '但', '而', '为', '以', '被', '让', '从', '把', '给', '向', '对', '关于', '如何', '什么', '怎么', '为什么', '还是', '或者', '以及', '并且', '不过', '然后', '因为', '所以', '如果', '虽然', '但是', 'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'shall', 'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 'just', 'and', 'but', 'if', 'or', 'because', 'until', 'while', 'about', 'against', 'among', 'around', 'behind', 'beyond', 'despite', 'except', 'following', 'like', 'near', 'off', 'over', 'past', 'since', 'till', 'upon', 'within', 'without']);
+
+      const wordCounts = {};
+      articles.forEach(a => {
+        const title = (a.title || '').replace(/[^一-龥a-zA-Z0-9]/g, ' ');
+        const words = title.split(/\s+/).filter(w => w.length >= 2 && !stopWords.has(w.toLowerCase()));
+        words.forEach(w => {
+          wordCounts[w] = (wordCounts[w] || 0) + 1;
+        });
+      });
+
+      const sorted = Object.entries(wordCounts).sort((a, b) => b[1] - a[1]).slice(0, 20);
+      if (!sorted.length) { container.innerHTML = ''; return; }
+
+      const maxCount = sorted[0][1];
+      const html = sorted.map(([word, count]) => {
+        const size = 0.8 + (count / maxCount) * 0.15; // 0.8 - 0.95em
+        const opacity = 0.6 + (count / maxCount) * 0.4;
+        return '<button class="tag-item" onclick="filterByTag(' + JSON.stringify(word).replace(/"/g, '&quot;') + ')" style="font-size:' + size.toFixed(2) + 'em;opacity:' + opacity.toFixed(2) + '">' +
+          word + '<span class="tag-count">' + count + '</span></button>';
+      }).join('');
+
+      container.innerHTML = html;
+      document.getElementById('tagCloudContainer').style.display = 'block';
+    }
+
+    function filterByTag(tag) {
+      searchInput.value = tag;
+      currentFilter = tag;
+      filterArticles();
+      showToast('已筛选标签: ' + tag, 'success');
     }
 
     // ===== Render Articles =====

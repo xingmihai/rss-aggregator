@@ -23,6 +23,27 @@ const parser = new XMLParser({
 // ========== 工具函数 ==========
 
 /**
+ * 生成安全的文件名（基于 URL）
+ */
+function getSafeFileName(url) {
+  try {
+    const urlObj = new URL(url);
+    // 使用 hostname + pathname 生成唯一文件名，替换非法字符
+    let name = urlObj.hostname + urlObj.pathname;
+    name = name.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+    // 限制长度，避免文件名过长
+    if (name.length > 100) {
+      name = name.substring(0, 100);
+    }
+    return name + '.json';
+  } catch {
+    // 如果 URL 解析失败，使用简单的哈希方式
+    const hash = Buffer.from(url).toString('base64').replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
+    return `rss_${hash}.json`;
+  }
+}
+
+/**
  * 抓取 RSS 内容（带超时保护）
  */
 async function fetchRSS(url) {
@@ -91,7 +112,7 @@ function formatDate(str) {
 function extractLink(linkObj) {
   if (!linkObj) return '#';
   if (typeof linkObj === 'string') return linkObj;
-  if (typeof linkObj === 'object') {
+  if (typeof obj === 'object') {
     if (linkObj['@_href']) return linkObj['@_href'];
     if (linkObj['#text']) return linkObj['#text'];
   }
@@ -212,6 +233,22 @@ async function main() {
         const xml = await fetchRSS(url);
         const { articles, feed } = parseFeed(xml);
         console.log(`  ✅ ${feed?.title || '未知'}: ${articles.length} 篇`);
+
+        // ========== 新增：每个源单独保存 JSON ==========
+        const safeFileName = getSafeFileName(url);
+        const singleSourcePath = path.join(outputDir, safeFileName);
+        const singleSourceData = articles.map(item => ({
+          title: item.title,
+          author: item.author,
+          auther: item.auther,
+          date: item.date || '未知时间',
+          link: item.link,
+          content: item.content,
+        }));
+        fs.writeFileSync(singleSourcePath, JSON.stringify(singleSourceData, null, 2));
+        console.log(`     💾 已保存单独文件: ${safeFileName} (${singleSourceData.length} 篇)`);
+        // ================================================
+
         successCount++;
         return articles;
       } catch (err) {
@@ -252,7 +289,8 @@ async function main() {
 
   console.log(`\n🎉 完成！成功 ${successCount} 个，失败 ${failCount} 个`);
   console.log(`📝 共聚合 ${allArticles.length} 篇文章，保留最新 ${topArticles.length} 篇`);
-  console.log(`💾 输出文件: ${outputPath}`);
+  console.log(`💾 聚合输出文件: ${outputPath}`);
+  console.log(`📁 各源单独文件保存在: ${outputDir}`);
 }
 
 main().catch((err) => {
