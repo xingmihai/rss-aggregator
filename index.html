@@ -222,6 +222,19 @@
     .back-to-top:hover { background:var(--accent); color:#fff; border-color:var(--accent); transform:translateY(-2px); }
 
     /* Responsive */
+    /* Pagination */
+    .pagination { display:flex; justify-content:center; padding:24px 0; }
+    .pagination-container { display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center; }
+    .pagination-btn { padding:8px 14px; background:var(--bg-tertiary); border:1px solid var(--border-color); border-radius:var(--radius-sm); color:var(--text-primary); font-size:13px; cursor:pointer; font-family:inherit; transition:all .2s; font-weight:500; min-width:36px; text-align:center; }
+    .pagination-btn:hover:not(:disabled) { background:var(--accent-soft); color:var(--accent); border-color:var(--accent); }
+    .pagination-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .pagination-btn:disabled { opacity:.4; cursor:not-allowed; }
+    .pagination-ellipsis { color:var(--text-muted); font-size:13px; padding:0 4px; }
+
+    /* Article list scrollable container */
+    .article-list { display:flex; flex-direction:column; gap:12px; max-height:70vh; overflow-y:auto; padding-right:4px; }
+    .timeline { max-height:70vh; overflow-y:auto; padding-right:4px; }
+
     @media (max-width:640px) {
       .container { padding:0 16px; }
       .hero h1 { font-size:28px; }
@@ -234,6 +247,7 @@
       .stats-grid { grid-template-columns:repeat(2,1fr); }
       .filter-bar input { min-width:100%; }
       .source-bar-name { width:80px; }
+      .pagination-btn { padding:6px 10px; font-size:12px; }
     }
   </style>
 </head>
@@ -446,12 +460,12 @@
       </div>
 
       <!-- Articles List -->
-      <div class="articles-page-title">
+      <div class="articles-page-title" style="display:flex;align-items:center;justify-content:space-between;margin:24px 0 16px;">
         <div>
-          <h1><span class="icon">📰</span>最新文章</h1>
-          <div class="subtitle">来自多个 RSS 源的聚合内容</div>
+          <h1 style="font-size:24px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px;"><span>📰</span>最新文章</h1>
+          <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">来自多个 RSS 源的聚合内容</div>
         </div>
-        <span class="article-count" id="articleCount"></span>
+        <span style="font-size:13px;color:var(--text-muted);" id="articleCount"></span>
       </div>
 
       <div class="filter-bar" id="filterBar" style="display:none;">
@@ -470,9 +484,7 @@
         </div>
       </div>
 
-      <div class="load-more" id="loadMore" style="display:none;">
-        <button class="load-more-btn" id="loadMoreBtn">加载更多</button>
-      </div>
+      <div class="pagination" id="pagination" style="display:none;"></div>
     </main>
   </div>
 
@@ -561,8 +573,7 @@
     const sourceFilter = document.getElementById('sourceFilter');
     const viewMode = document.getElementById('viewMode');
     const filterBar = document.getElementById('filterBar');
-    const loadMoreBtn = document.getElementById('loadMoreBtn');
-    const loadMoreDiv = document.getElementById('loadMore');
+    const paginationDiv = document.getElementById('pagination');
     const statsGrid = document.getElementById('statsGrid');
     const sourceBars = document.getElementById('sourceBars');
 
@@ -571,7 +582,7 @@
     let currentSource = '';
     let currentView = 'list';
     let articlesLoaded = false;
-    let displayedCount = 0;
+    let currentPageNum = 1;
     const PAGE_SIZE = 10;
 
     function formatDate(dateStr) {
@@ -672,8 +683,6 @@
       const thumb = extractImage(article.content);
       let faviconUrl = '';
       try { const urlObj = new URL(link); faviconUrl = 'https://favicon.im/' + urlObj.hostname; } catch(e) {}
-      const shareText = encodeURIComponent(title + ' - ' + author);
-      const shareUrl = encodeURIComponent(link);
 
       let html = '<a href="' + link + '" target="_blank" rel="noopener" class="article-card" style="animation-delay:' + (index * 0.05) + 's">';
       html += '<div class="article-card-body">';
@@ -689,8 +698,6 @@
       '</div>';
       if (summary) html += '<div class="article-summary">' + summary + '</div>';
       html += '<div class="article-actions">' +
-        '<button class="action-btn" data-share="weibo" data-title="' + shareText + '" data-url="' + shareUrl + '">分享到微博</button>' +
-        '<button class="action-btn" data-share="qq" data-title="' + shareText + '" data-url="' + shareUrl + '">分享到QQ</button>' +
         '<button class="action-btn" data-copy="' + link + '">复制链接</button>' +
       '</div>';
       html += '</div>';
@@ -720,34 +727,30 @@
       return html;
     }
 
-    function renderArticles(articles, append) {
+    function renderArticles(articles) {
       if (!articles || articles.length === 0) {
-        if (!append) {
-          articleList.innerHTML = '<div class="empty-state"><div class="icon">📭</div><div>暂无文章，请检查 RSS 源配置。</div></div>';
-          articleCount.textContent = '';
-          loadMoreDiv.style.display = 'none';
-        }
+        articleList.innerHTML = '<div class="empty-state"><div class="icon">📭</div><div>暂无文章，请检查 RSS 源配置。</div></div>';
+        articleCount.textContent = '';
+        paginationDiv.style.display = 'none';
         return;
       }
 
       articleCount.textContent = '共 ' + allArticles.length + ' 篇';
-      const startIdx = append ? displayedCount : 0;
+
+      // 分页计算
+      const totalPages = Math.ceil(articles.length / PAGE_SIZE);
+      const startIdx = (currentPageNum - 1) * PAGE_SIZE;
       const pageArticles = articles.slice(startIdx, startIdx + PAGE_SIZE);
-      displayedCount = startIdx + pageArticles.length;
 
       if (currentView === 'timeline') {
-        if (!append) articleList.innerHTML = renderTimeline(pageArticles);
+        articleList.innerHTML = renderTimeline(pageArticles);
       } else {
-        const html = pageArticles.map((a, i) => renderCard(a, startIdx + i)).join('');
-        if (append) {
-          const container = articleList.querySelector('.article-list');
-          if (container) container.insertAdjacentHTML('beforeend', html);
-        } else {
-          articleList.innerHTML = '<div class="article-list">' + html + '</div>';
-        }
+        const html = pageArticles.map((a, i) => renderCard(a, i)).join('');
+        articleList.innerHTML = '<div class="article-list">' + html + '</div>';
       }
 
-      loadMoreDiv.style.display = displayedCount < articles.length ? 'block' : 'none';
+      // 渲染分页
+      renderPagination(totalPages);
 
       requestAnimationFrame(() => {
         document.querySelectorAll('.article-card').forEach((card, i) => {
@@ -760,7 +763,47 @@
           img.onerror = function() { this.style.display = 'none'; };
         });
       });
-      // Share button event delegation (moved to init)
+    }
+
+    function renderPagination(totalPages) {
+      if (totalPages <= 1) {
+        paginationDiv.style.display = 'none';
+        return;
+      }
+      paginationDiv.style.display = 'flex';
+
+      let html = '<div class="pagination-container">';
+
+      // 上一页
+      html += '<button class="pagination-btn" ' + (currentPageNum <= 1 ? 'disabled' : '') + ' data-page="' + (currentPageNum - 1) + '">← 上一页</button>';
+
+      // 页码
+      const maxVisible = 5;
+      let startPage = Math.max(1, currentPageNum - Math.floor(maxVisible / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+      if (endPage - startPage < maxVisible - 1) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+      }
+
+      if (startPage > 1) {
+        html += '<button class="pagination-btn" data-page="1">1</button>';
+        if (startPage > 2) html += '<span class="pagination-ellipsis">...</span>';
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        html += '<button class="pagination-btn ' + (i === currentPageNum ? 'active' : '') + '" data-page="' + i + '">' + i + '</button>';
+      }
+
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += '<span class="pagination-ellipsis">...</span>';
+        html += '<button class="pagination-btn" data-page="' + totalPages + '">' + totalPages + '</button>';
+      }
+
+      // 下一页
+      html += '<button class="pagination-btn" ' + (currentPageNum >= totalPages ? 'disabled' : '') + ' data-page="' + (currentPageNum + 1) + '">下一页 →</button>';
+
+      html += '</div>';
+      paginationDiv.innerHTML = html;
     }
 
     function filterArticles() {
@@ -777,8 +820,8 @@
           return title.includes(kw) || content.includes(kw) || author.includes(kw);
         });
       }
-      displayedCount = 0;
-      renderArticles(filtered, false);
+      currentPageNum = 1;
+      renderArticles(filtered);
       if (currentFilter || currentSource) {
         articleCount.textContent = '共 ' + allArticles.length + ' 篇 · 显示 ' + filtered.length + ' 篇';
       }
@@ -786,8 +829,8 @@
 
     searchInput.addEventListener('input', (e) => { currentFilter = e.target.value.trim(); filterArticles(); });
     sourceFilter.addEventListener('change', (e) => { currentSource = e.target.value; filterArticles(); });
-    viewMode.addEventListener('change', (e) => { currentView = e.target.value; displayedCount = 0; filterArticles(); });
-    loadMoreBtn.addEventListener('click', () => { filterArticles(); });
+    viewMode.addEventListener('change', (e) => { currentView = e.target.value; currentPageNum = 1; filterArticles(); });
+
 
     function showError() {
       articleList.innerHTML = '<div class="error-state">' +
@@ -797,7 +840,7 @@
         '<button class="retry-btn" onclick="loadArticles()">重新加载</button>' +
       '</div>';
       articleCount.textContent = '';
-      loadMoreDiv.style.display = 'none';
+      paginationDiv.style.display = 'none';
     }
 
     async function loadArticles() {
@@ -811,8 +854,8 @@
         updateStats(allArticles);
         renderSourceBars(allArticles);
         filterBar.style.display = 'flex';
-        displayedCount = 0;
-        renderArticles(allArticles, false);
+        currentPageNum = 1;
+        renderArticles(allArticles);
         articlesLoaded = true;
       } catch (err) {
         console.error('Failed to load articles:', err);
@@ -820,21 +863,44 @@
       }
     }
 
-    // ===== Share button event delegation (global, bind once) =====
+    // ===== Copy button event delegation (global, bind once) =====
     articleList.addEventListener('click', function(e) {
       const btn = e.target.closest('.action-btn');
       if (!btn) return;
       e.preventDefault();
       e.stopPropagation();
-      if (btn.dataset.share === 'weibo') {
-        window.open('https://service.weibo.com/share/share.php?title=' + btn.dataset.title + '&url=' + btn.dataset.url, '_blank');
-      } else if (btn.dataset.share === 'qq') {
-        window.open('https://connect.qq.com/widget/shareqq/index.html?title=' + btn.dataset.title + '&url=' + btn.dataset.url, '_blank');
-      } else if (btn.dataset.copy) {
+      if (btn.dataset.copy) {
         navigator.clipboard.writeText(btn.dataset.copy).then(() => {
           btn.textContent = '已复制';
           setTimeout(() => btn.textContent = '复制链接', 1500);
         });
+      }
+    });
+
+    // ===== Pagination event delegation (global, bind once) =====
+    paginationDiv.addEventListener('click', function(e) {
+      const btn = e.target.closest('.pagination-btn');
+      if (!btn) return;
+      if (btn.disabled) return;
+      const page = parseInt(btn.dataset.page);
+      if (page && page !== currentPageNum) {
+        currentPageNum = page;
+        // 重新计算过滤后的文章并渲染当前页
+        let filtered = allArticles;
+        if (currentSource) {
+          filtered = filtered.filter(a => (a.author || a.auther || '未知来源') === currentSource);
+        }
+        if (currentFilter) {
+          const kw = currentFilter.toLowerCase();
+          filtered = filtered.filter(a => {
+            const title = (a.title || '').toLowerCase();
+            const content = stripHtml(a.content || '').toLowerCase();
+            const author = (a.author || a.auther || '').toLowerCase();
+            return title.includes(kw) || content.includes(kw) || author.includes(kw);
+          });
+        }
+        renderArticles(filtered);
+        articleList.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     });
 
