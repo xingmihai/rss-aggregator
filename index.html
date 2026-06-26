@@ -346,7 +346,7 @@
 
     td strong { color: var(--success); }
 
-    /* ===== Code Blocks (FIXED) ===== */
+    /* ===== Code Blocks ===== */
     .code-block-wrapper {
       position: relative;
       margin: 18px 0;
@@ -446,7 +446,7 @@
     .code-punctuation { color: var(--text-secondary); }
     .code-property { color: #7ee787; }
 
-    /* ===== File Tree (FIXED) ===== */
+    /* ===== File Tree ===== */
     .file-tree {
       background: var(--code-bg);
       border: 1px solid var(--border-color);
@@ -479,18 +479,33 @@
     .file-tree .file { color: var(--text-secondary); }
     .file-tree .comment { color: var(--text-muted); }
 
-    /* ===== JSON Preview ===== */
+    /* ===== JSON Preview (FIXED) ===== */
     .json-preview {
       background: var(--code-bg);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
       padding: 18px 20px;
-      font-family: var(--font-mono);
-      font-size: 13px;
-      line-height: 1.8;
-      overflow-x: auto;
       margin: 18px 0;
+      overflow-x: auto;
       -webkit-overflow-scrolling: touch;
+    }
+
+    .json-preview pre {
+      margin: 0;
+      padding: 0;
+      background: none;
+      overflow: visible;
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      line-height: 1.8;
+      color: var(--text-secondary);
+    }
+
+    .json-preview pre code {
+      white-space: pre;
+      word-wrap: normal;
+      word-break: normal;
+      color: var(--text-secondary);
     }
 
     .json-key { color: #7ee787; }
@@ -650,6 +665,8 @@
       .steps > li:not(:last-child)::after { left: 14px; }
       .file-tree { padding: 14px 16px; }
       .file-tree pre { font-size: 12.5px; line-height: 1.9; }
+      .json-preview { padding: 14px 16px; }
+      .json-preview pre { font-size: 12.5px; line-height: 1.7; }
     }
 
     @media (max-width: 400px) {
@@ -843,7 +860,7 @@
       <p><code>articles.json</code> 返回数组，每篇文章包含：</p>
 
       <div class="json-preview">
-<span class="json-bracket">[</span>
+        <pre><code><span class="json-bracket">[</span>
   <span class="json-bracket">{</span>
     <span class="json-key">"title"</span><span class="json-bracket">:</span> <span class="json-string">"文章标题"</span><span class="json-bracket">,</span>
     <span class="json-key">"author"</span><span class="json-bracket">:</span> <span class="json-string">"来源站点名称"</span><span class="json-bracket">,</span>
@@ -851,7 +868,7 @@
     <span class="json-key">"link"</span><span class="json-bracket">:</span> <span class="json-string">"https://example.com/article"</span><span class="json-bracket">,</span>
     <span class="json-key">"content"</span><span class="json-bracket">:</span> <span class="json-string">"文章摘要内容..."</span>
   <span class="json-bracket">}</span>
-<span class="json-bracket">]</span>
+<span class="json-bracket">]</span></code></pre>
       </div>
 
       <ul>
