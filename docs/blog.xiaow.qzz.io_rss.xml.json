@@ -1,0 +1,162 @@
+[
+  {
+    "title": "弄了一个专为vh-astro博客设计的友链管理系统，把烦人操作全扔了",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2026-06-21T14:59:40.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/friend-link-manager/",
+    "content": "前言做博客最烦的事情是什么？对我来说，管理友链排前三。以前的状态：有人在评论区留言要交换友链→我去对方站点看内容是否合格→合格的话手动把信息加到自己站点的数据文件里→再手动回复对方”已添加”。如果有邮箱来往，那就更乱了。来回折腾几轮之后，我决定——写个系统把这套流程全自动化。折腾了一段时间后，终于能"
+  },
+  {
+    "title": "我的网站被刷了 150G 流量——复盘与反思",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2026-06-05T10:45:00.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/no-waf-traffic-attack/",
+    "content": "起因我的网站一直是挂在netlify的，主域名挂在Cloudflare上，有WAF和BotFightMode防护，一直跑得挺安稳。前段时间搞了个bianrong.eu.org的备用域名绑上去，想着多个入口也没什么坏处。当时图省事，把备用域名挂在另一个CDN平台上进行「尝鲜测试」，没开付费套餐，自然也"
+  },
+  {
+    "title": "在termux安装blutter教程",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2026-03-21T15:50:12.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/termux-install-blutter/",
+    "content": "前言好了，隔了这么久也是又来更新了，这里也是带来termux安装blutter的教程，封面图是AI生成的，挺雷霆吧😂目录1.blutter功能2.更换快速镜像3.安装教程4.使用教程blutter功能为什么要安装blutter？因为当我们逆向分析flutter软件时，他的代码不是在dex文件里，而"
+  },
+  {
+    "title": "之前答应大家的作业帮纯净版，来啦~",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2026-03-07T19:28:48.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/zuoyebang-clean-share/",
+    "content": "按照之前的承诺，我现在把作业帮纯净版发出来，至于为什么过了这么久才发。。。。。嗯，忘了😄本期结尾，顺便挖一下坑截图预览可以看到也是非常之纯净啊，几乎是没有广告的。之前的话，因为强制有更新弹窗，现在我给他直接去除了，理论上是不会再弹窗了，嗯，大概就是这样，又水一贴，嘻嘻下载地址因为123盘要登录才能"
+  },
+  {
+    "title": "寒假就要结束了，你的作业写了吗？",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2026-02-22T11:53:24.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/holiday-work/",
+    "content": "眼瞅着寒假就快放完了，这边也是终于要开始动手写作业了唉，苦逼高中牲，旁边还有一大坨试卷，还要带订正话说你们那边什么时候开学？我这边是3月2号，来评论区说说呗（调皮.jpg）等会有时间，我分享一个自用的作业帮纯净版，虽然不能保证完全纯净，但是相对而言广告也是少了非常多的，也算是比较纯净的了，这几天强制"
+  },
+  {
+    "title": "给安卓软件去广告的方法，小白也能轻松学会！",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2026-02-12T00:29:48.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/easy-kill-ads/",
+    "content": "前言好不容易找个软件，广告满天飞？被动不动就跳出来的弹窗广告骚扰？不看广告不让用？这篇文章教会你，小白也能轻松去广告~目录1.不改包方法2.手动查找去除3.正则一键去除不改包方法先来讲讲不用修改安装包的方法改dns打开手机设置，搜索dns，可能是私人DNS，也可能是专用DNS，或者加密DNS，反正点"
+  },
+  {
+    "title": "构建你的专属AI聊天站：从零到一的代码解析与实战分享",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2026-01-31T19:40:22.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/ai-chat-free/",
+    "content": "引言本文将深度解析一款基于现代Web技术构建的AI聊天应用，完整展示从界面设计到核心功能的实现细节。通过剖析代码架构与关键技术选型，为你打造个性化聊天机器人提供完整的技术蓝图。源码下载演示地址截图核心功能概览1.多模态交互文本对话：支持自然语言处理与上下文关联图片识别：集成第三方API实现图像内容解"
+  },
+  {
+    "title": "没灵感了，征求一下灵感。。。",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2026-01-17T15:58:16.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/zhengqiu-lg/",
+    "content": "发篇帖子，维持一下更新，主要是最近没什么灵感了。。。。大家有什么需求的可以发在评论区看看然后因leancloud突然宣布停止服务，可以，看我的这篇文章，进行重新部署一，避免受影响。后续的话暂时还没有什么更新计划，有灵感了，我一定补上"
+  },
+  {
+    "title": "免费给自己的博客部署waline评论系统的教程~",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2026-01-16T07:20:42.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/waline-deploy-course/",
+    "content": "前言想给博客加能唠嗑、自己掌控的评论区？Waline刚好——不用靠第三方，部署简单还攒互动，这篇教你搞定～目录1.waline概述2.服务端部署（使用vercel）3.配置数据库4.客户端配置5.管理员注册6.视频教程（来自其他up主）7.如何更新waline概述轻量53kbgzip的完整客户端大小"
+  },
+  {
+    "title": "小米手环添加电子书教程",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2026-01-02T11:14:08.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/xiaomi-band-ebook-tutorial/",
+    "content": "前言Ok啊，我又出来发文章了，这次带来的是给小米手环添加电子书的教程，能让你上课的时候更不容易犯困准备工作你需要准备好以下物品小米band9/10/10nfc手机（安卓，任意品牌）充足的时间脑子末尾有视频教程（来自其他up主）开始操作下载所需工具AstroBox小米运动健康喵喵电子书同步器你要同步的"
+  },
+  {
+    "title": "博客搭建日记",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2026-01-01T11:33:45.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/blog-building-diary/",
+    "content": "经过我这段时间的不懈努力，我的博客终于是优化的七七八八了😁真是可喜可贺，在今年的最后一天把博客优化完毕，优化教程可以看我的文章博客搭建添加waline评论区waline评论通知圈子与动态api化还有一个就是，有些人下面上一章和下一章点击之后会显示404，其实要解决也非常简单，只要在目录/src/c"
+  },
+  {
+    "title": "vhAstro主题博客优化方案",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2025-12-31T19:50:39.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/vhastro-blog-youhua/",
+    "content": "前言&目录之前我教过大家如何搭建vhAstro-Theme博客，以及给这个博客配置waline评论区和waline邮件通知（具体可以看我历史文章），那现在我就来教大家，如何优化自己的博客，分为以下两个方面1.圈子功能api化2.动态功能api化至于友链功能为什么不弄。。。因为感觉没必要圈子"
+  },
+  {
+    "title": "教你给自己的waline评论系统部署评论通知",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2025-12-27T11:37:45.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/waline-mail-push/",
+    "content": "前言之前我教过大家如何给自己的博客搭建waline的评论系统，现在教大家如何配置邮件通知~配置要求已配置waline在自己的博客（可以看我之前的文章）有自己的邮箱服务建议使用vercel，更方便教程开始获取邮箱服务授权码我们需要先到自己的邮箱服务中获取授权码，一般不是登录密码，推荐邮箱列表QQ邮箱1"
+  },
+  {
+    "title": "教你手撕谷歌服务的校验弹窗~",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2025-12-27T09:35:46.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/google-server-tc/",
+    "content": "在GooglePlay里发现了一款应用，名字叫KukuTV，还是三哥写的，可惜评分只有0.0下载下来之后，一点进去就直接给我弹了两个窗：好嘛，不就是谷歌服务校验吗？今天我就要手撕它。第一个弹出的黑色窗口是软件自带的，第二个弹出的白色窗口则是谷歌官方的。两个窗口均用于谷歌服务校验。今天主要分析的是第二"
+  },
+  {
+    "title": "【免费域名】永久免费！零成本拥有一个属于自己的域名！",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2025-12-13T19:18:36.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/free-domain-name-dpdns/",
+    "content": "免费域名注册与订阅提醒系统搭建指南本服务永久免费，但需每180天续订一次（续订免费），续订后可再用365天。当剩余天数不足180天时可再次续费。总花费：0元人民币末尾附视频教程第一步：注册免费域名1.查询域名可用性访问DPDNS官网，在搜索框中输入想要的域名。注意：域名后缀必须为.dpdns.org"
+  },
+  {
+    "title": "【开源教程】从0开始，免费拥有属于自己的博客",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2025-12-12T23:34:15.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/astro-theme-blog/",
+    "content": "前言说实话，想要搭建博客的话，有很多种方法但多少都有一些成本（比如服务器之类的），于是静态博客就出现了博客介绍开源项目：vhAstro-Theme一款基于Astro构建的优雅的响应式博客主题功能特性简洁的响应式设计流畅的动画和页面过渡丝滑的阻尼滚动效果顶部Banner两列布局阅读时间字数统计代码块语"
+  },
+  {
+    "title": "【开源分享】番茄小说搜索解析与下载-多平台支持（手机可用）",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2025-12-07T16:42:43.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/fanqie-novel-downloader/",
+    "content": "番茄小说下载器简洁高效的小说下载与导出工具，采用HTML5现代化界面，支持TXT/EPUB多格式导出。我这里主要面向手机用户，其他系统用户也有，但需要自己去github下载所需文件，在最下面有链接。核心功能✅获取书籍信息-封面、作者、简介等完整信息✅灵活下载-支持整本或范围下载✅多格式导出-TXT/"
+  },
+  {
+    "title": "Astro主题-优雅的vhAstro-Theme【使用文档】",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2025-03-02T18:18:18.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/astro-theme-vhastro-theme/",
+    "content": "🍬特色页面友情链接//配置文件src/page_data/Link.tsexportdefault{//API接口请求优先，数据格式保持和data一致api:\"\",//api为空则使用data静态数据data:[{name:\"韩小韩博客\",link:\"https://www.vvhan.com\","
+  },
+  {
+    "title": "【开源】HanAnalytics访问分析Web统计托管于（Cloudflare Pages）",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2024-09-22T20:20:13.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/han-analytics/",
+    "content": "Han-Analytics是一个简单的网络分析跟踪器和仪表板，托管在被称为赛博菩萨的Cloudflare上,无成本稳定运行,每天可达10万次免费统计。域名、服务器、数据库通通都不用!托管在CloudflarePages上即可快速部署网站分析仪表板。页面截图点击体验项目地址HanAnalytics-G"
+  },
+  {
+    "title": "【开源】Cloudflare优选IP➕DnsPod的DDNS自动切换",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2024-08-27T15:24:10.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/cloudflare-ip-dnspod-ddns/",
+    "content": "CloudFlare是一个非常优秀的CDN服务，但是CloudFlare也有一个大的毛病——大陆访问速度很慢。国外很多网站都在使用CloudflareCDN，但分配给中国内地访客的IP并不友好（延迟高、丢包多、速度慢）。虽然Cloudflare公开了所有IP段，但想要在这么多IP中找到适合自己的，怕"
+  }
+]
