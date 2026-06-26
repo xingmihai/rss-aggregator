@@ -326,6 +326,9 @@
           <a href="#structure">项目结构</a>
           <a href="#quickstart">快速开始</a>
         </nav>
+        <button class="btn btn-secondary" id="backToHome" style="padding:6px 14px;font-size:13px;display:none;">
+          <span>←</span> 首页
+        </button>
         <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
           <span id="themeIcon">☀️</span>
         </button>
@@ -560,9 +563,9 @@
     </main>
   </div>
 
-  <footer class="site-footer">
-    <div class="container">
-      <p><span style="cursor:pointer;color:var(--text-secondary);" id="footerHome">RSS 聚合器</span> · 数据每 15 分钟自动更新</p>
+  <footer class="site-footer" id="siteFooter">
+    <div class="container" id="footerContent">
+      <p>This site is open source. <a href="https://github.com/xingmihai/rss-aggregator/edit/main/README.md">Improve this page</a>.</p>
     </div>
   </footer>
 
@@ -604,6 +607,7 @@
 
       const fromPage = currentPage === 'home' ? pageHome : pageArticles;
       const toPage = page === 'home' ? pageHome : pageArticles;
+      const footerContent = document.getElementById('footerContent');
 
       // Exit animation
       fromPage.classList.add('exit');
@@ -615,6 +619,13 @@
         fromPage.style.display = 'none';
         toPage.style.display = 'block';
 
+        // Update footer content
+        if (page === 'home') {
+          footerContent.innerHTML = '<p>This site is open source. <a href="https://github.com/xingmihai/rss-aggregator/edit/main/README.md">Improve this page</a>.</p>';
+        } else {
+          footerContent.innerHTML = '<p><span style="cursor:pointer;color:var(--text-secondary);" onclick="switchPage(&#39;home&#39;)">RSS 聚合器</span> · 数据每 15 分钟自动更新</p>';
+        }
+
         // Small delay for display to apply
         requestAnimationFrame(() => {
           toPage.classList.add('active');
@@ -623,10 +634,11 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 300);
 
-      // Update nav
+      // Update nav and back button
       navLinks.forEach(link => {
         link.classList.toggle('active', link.dataset.page === page);
       });
+      document.getElementById('backToHome').style.display = page === 'articles' ? 'inline-flex' : 'none';
 
       currentPage = page;
 
@@ -645,7 +657,7 @@
 
     document.getElementById('homeLink').addEventListener('click', () => switchPage('home'));
     document.getElementById('gotoArticles').addEventListener('click', () => switchPage('articles'));
-    document.getElementById('footerHome').addEventListener('click', () => switchPage('home'));
+    document.getElementById('backToHome').addEventListener('click', () => switchPage('home'));
 
     // ===== Articles =====
     const articleList = document.getElementById('articleList');
