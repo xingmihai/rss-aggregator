@@ -59,7 +59,7 @@
           </div>
           <h1>把多个 RSS 源，聚合成一个更好看的阅读入口</h1>
           <p>使用 GitHub Actions 定时抓取多个 RSS 源，生成静态 JSON 文件，通过 Cloudflare Pages 全球 CDN 分发，让你的聚合页既稳定，又足够轻量。</p>
-          <div class="hero-actions">
+         <div class="hero-actions">
             <button class="btn btn-primary" id="gotoArticles">
               <span>📰</span> 浏览文章
             </button>
@@ -133,6 +133,24 @@
     </section>
 
     <main class="main-content container">
+      <section class="dashboard-overview" aria-label="产品能力总览">
+        <article class="overview-card primary">
+          <span class="overview-icon">🧭</span>
+          <h3>信息驾驶舱</h3>
+          <p>聚合最新文章、来源健康、更新趋势与工作流状态，减少在多个阅读器和仓库页面之间切换。</p>
+        </article>
+        <article class="overview-card">
+          <span class="overview-icon">🔎</span>
+          <h3>快速筛选</h3>
+          <p>按关键词、来源与标签定位内容，并在卡片视图和时间线视图之间自由切换。</p>
+        </article>
+        <article class="overview-card">
+          <span class="overview-icon">📦</span>
+          <h3>JSON API</h3>
+          <p>输出稳定的 <code>articles.json</code>，可被前端页面、自动化脚本或第三方阅读体验直接消费。</p>
+        </article>
+      </section>
+
       <section class="content-section" id="why">
         <h2>
           <span class="section-icon">⚖️</span>
@@ -147,7 +165,7 @@
               <tr><td>每日请求限制</td><td>10 万次</td><td><strong>无限制</strong></td></tr>
               <tr><td>CPU 时间限制</td><td>10 毫秒/请求</td><td><strong>无限制</strong></td></tr>
               <tr><td>成本</td><td>免费但有额度</td><td><strong>完全免费</strong></td></tr>
-              <tr><td>实时性</td><td>实时</td><td>最多延迟 4 小时</td></tr>
+              <tr><td>实时性</td><td>实时</td><td>默认约 15 分钟更新</td></tr>
             </tbody>
           </table>
         </div>
@@ -155,7 +173,7 @@
           <span class="notice-icon">💡</span>
           <div class="notice-content">
             <strong>提示</strong>
-            对于 RSS 阅读场景，4 小时延迟完全可以接受。
+            对于 RSS 阅读场景，默认 15 分钟更新频率通常已经足够，也可在工作流中按需调整。
           </div>
         </div>
       </section>
@@ -172,7 +190,10 @@
 │       └── <span class="file">fetch-rss.yml</span>      <span class="comment"># GitHub Actions 工作流配置</span>
 ├── <span class="dir">docs/</span>                     <span class="comment"># Cloudflare Pages 输出目录</span>
 │   └── <span class="file">articles.json</span>           <span class="comment"># 自动生成的 RSS 聚合数据</span>
-├── <span class="file">build.js</span>                    <span class="comment"># RSS 抓取与解析脚本</span>
+├── <span class="dir">assets/</span>                   <span class="comment"># 前端样式和脚本</span>
+│   ├── <span class="file">styles.css</span>             <span class="comment"># 页面样式</span>
+│   └── <span class="file">app.js</span>                 <span class="comment"># 页面交互逻辑</span>
+├── <span class="file">build.js</span>                    <span class="comment"># RSS/Atom/RDF 抓取与解析脚本</span>
 └── <span class="file">README.md</span></code></pre>
         </div>
       </section>
@@ -253,9 +274,10 @@
 <span class="json-bracket">]</span></code></pre>
         </div>
         <ul>
-          <li>最多返回 <strong>20 篇</strong> 最新文章</li>
+          <li>最多返回 <strong>20 篇</strong> 最新文章，可通过 <code>MAX_ARTICLES</code> 调整</li>
           <li>按发布日期倒序排列</li>
           <li>单个 RSS 源失败不影响其他源</li>
+          <li>兼容输出旧字段 <code>auther</code>，新代码建议优先使用 <code>author</code></li>
         </ul>
       </section>
 
