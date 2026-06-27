@@ -8,7 +8,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "fast-xml-parser": "^5.9.3",
     "he": "^1.2.0"
