@@ -11,9 +11,9 @@
 | 每日请求限制 | 10 万次 | **无限制** |
 | CPU 时间限制 | 10 毫秒/请求 | **无限制** |
 | 成本 | 免费但有额度 | **完全免费** |
-| 实时性 | 实时 | 最多延迟 4 小时 |
+| 实时性 | 实时 | 默认约 15 分钟更新 |
 
-对于 RSS 阅读场景，4 小时延迟完全可以接受。
+对于 RSS 阅读场景，默认 15 分钟更新频率通常已经足够，也可按需调低或调高。
 
 ## 项目结构
 
@@ -24,7 +24,10 @@ rss-aggregator/
 │       └── fetch-rss.yml      # GitHub Actions 工作流配置
 ├── docs/                     # Cloudflare Pages 输出目录
 │   └── articles.json           # 自动生成的 RSS 聚合数据
-├── build.js                    # RSS 抓取与解析脚本
+├── assets/                    # 前端静态资源
+│   ├── styles.css             # 页面样式
+│   └── app.js                 # 页面交互逻辑
+├── build.js                   # RSS/Atom/RDF 抓取与解析脚本
 └── README.md
 ```
 
@@ -61,7 +64,7 @@ https://www.xmhai.cn/rss.xml,https://example.com/feed.xml
 前端调用示例：
 
 ```javascript
-fetch('/articles.json')
+fetch('/docs/articles.json')
   .then(r => r.json())
   .then(articles => {
     articles.forEach(article => {
@@ -78,7 +81,7 @@ fetch('/articles.json')
 [
   {
     "title": "文章标题",
-    "auther": "来源站点名称",
+    "author": "来源站点名称",
     "date": "2026-06-20",
     "link": "https://example.com/article",
     "content": "文章摘要内容..."
@@ -86,13 +89,14 @@ fetch('/articles.json')
 ]
 ```
 
-- 最多返回 **20 篇** 最新文章
+- 最多返回 **20 篇** 最新文章（可通过 `MAX_ARTICLES` 调整）
 - 按发布日期倒序排列
 - 单个 RSS 源失败不影响其他源
+- 兼容输出旧字段 `auther`，新代码建议优先使用 `author`
 
 ## 定时频率
 
-默认每 **15 分钟** github 15 分钟抓取一次，可在 `.github/workflows/fetch-rss.yml` 中修改：
+默认每 **15 分钟** 抓取一次，可在 `.github/workflows/fetch-rss.yml` 中修改：
 
 ```yaml
 on:
@@ -104,7 +108,7 @@ on:
 
 ## 支持的 RSS 格式
 
-目前支持标准 RSS 2.0 格式（`<channel>` + `<item>`）。如需支持 Atom 或其他格式，可在 `build.js` 中扩展解析逻辑。
+目前支持 **RSS 2.0**、**Atom** 和 **RDF** 格式。解析逻辑集中在 `build.js`，可继续扩展更多 Feed 方言。
 
 ## 注意事项
 
