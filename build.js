@@ -1,16 +1,18 @@
-// build.js - 抓取 RSS 并生成静态 JSON（终极优化版）
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { XMLParser } = require('fast-xml-parser');
 const he = require('he');
 
-// ========== 配置 ==========
-const RSS_URLS = (process.env.RSS_URLS || '').split(',').map(u => u.trim()).filter(Boolean);
-const MAX_ARTICLES = parseInt(process.env.MAX_ARTICLES || '20', 10);
-const DEFAULT_UA = 'Mozilla/5.0 (compatible; RSS Aggregator/1.0)';
-const FETCH_TIMEOUT = 12000; // 12秒请求超时限制
+const DEFAULT_TEST_SOURCE = 'https://www.xmhai.cn/rss.xml';
+const DEFAULT_DESCRIPTION = '一个零成本、无限制的 RSS 聚合方案，使用 GitHub Actions 定时抓取多个 RSS 源，生成静态 JSON 文件，通过 Cloudflare Pages 全球 CDN 分发。';
+const OUTPUT_FILES = {
+  articles: 'articles.json',
+  buildReport: 'build-report.json',
+  cache: 'feed-cache.json',
+  siteConfig: 'site-config.json',
+};
 
-// XML 解析器配置
 const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: '@_',
@@ -20,51 +22,128 @@ const parser = new XMLParser({
   trimValues: true,
 });
 
-// ========== 工具函数 ==========
+function parseList(value) {
+  return String(value || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
 
-/**
- * 生成安全的文件名（基于 URL）
- */
+function parsePositiveInt(value, fallback) {
+  const parsed = parseInt(String(value ?? ''), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function getRuntimeConfig(env = process.env) {
+  const repo = env.SITE_REPO || env.GITHUB_REPOSITORY || '';
+  const workflowFile = env.WORKFLOW_FILENAME || 'fetch-rss.yml';
+  const outputDir = path.resolve(__dirname, env.OUTPUT_DIR || 'docs');
+
+  return {
+    rssUrls: parseList(env.RSS_URLS),
+    maxArticles: parsePositiveInt(env.MAX_ARTICLES, 20),
+    defaultUA: env.RSS_USER_AGENT || 'Mozilla/5.0 (compatible; RSS Aggregator/1.0)',
+    fetchTimeout: parsePositiveInt(env.FETCH_TIMEOUT_MS, 12000),
+    outputDir,
+    siteTitle: env.SITE_TITLE || 'RSS 聚合器',
+    siteDescription: env.SITE_DESCRIPTION || DEFAULT_DESCRIPTION,
+    siteUrl: env.SITE_URL || '',
+    repo,
+    repoUrl: repo ? `https://github.com/${repo}` : '',
+    repoApiBase: repo ? `https://api.github.com/repos/${repo}` : '',
+    workflowFile,
+  };
+}
+
+function readJson(filePath, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJson(filePath, data) {
+  fs.writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`);
+}
+
+function ensureDir(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+}
+
+function hashValue(value) {
+  return crypto.createHash('sha1').update(value).digest('hex');
+}
+
+function hashJson(value) {
+  return hashValue(JSON.stringify(value));
+}
+
 function getSafeFileName(url) {
   try {
     const urlObj = new URL(url);
-    // 使用 hostname + pathname 生成唯一文件名，替换非法字符
-    let name = urlObj.hostname + urlObj.pathname;
-    name = name.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
-    // 限制长度，避免文件名过长
-    if (name.length > 100) {
-      name = name.substring(0, 100);
-    }
-    return name + '.json';
+    let name = `${urlObj.hostname}${urlObj.pathname}`.replace(/[^a-zA-Z0-9_\-.]/g, '_');
+    if (name.length > 100) name = name.substring(0, 100);
+    return `${name}.json`;
   } catch {
-    // 如果 URL 解析失败，使用简单的哈希方式
     const hash = Buffer.from(url).toString('base64').replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
     return `rss_${hash}.json`;
   }
 }
 
-/**
- * 抓取 RSS 内容（带超时保护）
- */
-async function fetchRSS(url) {
+async function fetchRSS(url, options = {}) {
+  const {
+    fetchImpl = global.fetch,
+    timeout = 12000,
+    userAgent = 'Mozilla/5.0 (compatible; RSS Aggregator/1.0)',
+    cacheEntry = null,
+  } = options;
+
+  if (typeof fetchImpl !== 'function') {
+    throw new Error('当前运行环境不支持 fetch');
+  }
+
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  const headers = {
+    'User-Agent': userAgent,
+    Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.8',
+  };
+
+  if (cacheEntry?.etag) headers['If-None-Match'] = cacheEntry.etag;
+  if (cacheEntry?.lastModified) headers['If-Modified-Since'] = cacheEntry.lastModified;
 
   try {
-    const res = await fetch(url, {
-      headers: { 'User-Agent': DEFAULT_UA },
-      signal: controller.signal, // 绑定超时信号
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.text();
+    const res = await fetchImpl(url, { headers, signal: controller.signal });
+
+    if (res.status === 304) {
+      return {
+        status: 'not_modified',
+        etag: cacheEntry?.etag || '',
+        lastModified: cacheEntry?.lastModified || '',
+      };
+    }
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    const xmlText = await res.text();
+
+    return {
+      status: 'fetched',
+      xmlText,
+      etag: res.headers?.get?.('etag') || cacheEntry?.etag || '',
+      lastModified: res.headers?.get?.('last-modified') || cacheEntry?.lastModified || '',
+      responseHash: hashValue(xmlText),
+    };
   } finally {
-    clearTimeout(timeoutId); // 务必清除定时器
+    clearTimeout(timeoutId);
   }
 }
 
-/**
- * 提取并清理文本内容（处理 CDATA 和嵌套）
- */
 function extractText(obj) {
   if (obj == null) return '';
   if (typeof obj === 'string') return obj;
@@ -77,49 +156,55 @@ function extractText(obj) {
   return String(obj);
 }
 
-/**
- * 清理 HTML 标签并解码实体
- */
 function cleanContent(html) {
   if (!html) return '';
-  // 移除潜在的 script/style 标签及内容，防止垃圾数据或安全隐患
   let text = html.replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, '');
-  // 先解码 HTML 实体
   text = he.decode(text, { isAttributeValue: false, strict: false });
-  // 移除 HTML 标签
   text = text.replace(/<[^>]*>/g, ' ');
-  // 合并空白字符
   return text.replace(/\s+/g, ' ').trim();
 }
 
-/**
- * 格式化日期为 ISO 字符串
- */
 function formatDate(str) {
   if (!str) return '';
   try {
     const date = new Date(str);
-    if (isNaN(date.getTime())) return str;
+    if (Number.isNaN(date.getTime())) return str;
     return date.toISOString();
   } catch {
     return str;
   }
 }
 
-/**
- * 从 link 对象/字符串中提取 URL
- */
 function extractLink(linkObj) {
   if (!linkObj) return '#';
   if (typeof linkObj === 'string') return linkObj;
-  if (typeof obj === 'object') {
-    if (linkObj['@_href']) return linkObj['@_href'];
-    if (linkObj['#text']) return linkObj['#text'];
+  if (Array.isArray(linkObj)) {
+    const firstHref = linkObj.map(extractLink).find((item) => item && item !== '#');
+    return firstHref || '#';
+  }
+  if (typeof linkObj === 'object') {
+    if (linkObj['@_href']) return String(linkObj['@_href']);
+    if (linkObj['#text']) return String(linkObj['#text']);
   }
   return '#';
 }
 
-// ========== RSS / Atom 解析 ==========
+function normalizeArticle(item) {
+  const title = typeof item?.title === 'string' ? he.decode(item.title).trim() : '无标题';
+  const author = typeof item?.author === 'string' && item.author.trim() ? item.author.trim() : '未知来源';
+  const link = typeof item?.link === 'string' && item.link.trim() ? item.link.trim() : '#';
+  const content = typeof item?.content === 'string' ? item.content.trim() : '';
+  const date = item?.date ? formatDate(item.date) : '';
+
+  return {
+    title: title || '无标题',
+    author,
+    auther: author,
+    date: date || '未知时间',
+    link,
+    content,
+  };
+}
 
 function parseRSS2(xmlObj) {
   const channel = xmlObj.rss?.channel;
@@ -129,21 +214,13 @@ function parseRSS2(xmlObj) {
   const items = channel.item || [];
   const itemList = Array.isArray(items) ? items : [items];
 
-  const articles = itemList.map(item => {
-    const title = extractText(item.title) || '无标题';
-    const link = extractLink(item.link);
-    const pubDate = extractText(item.pubDate) || extractText(item['dc:date']) || '';
-    const description = extractText(item['content:encoded']) || extractText(item.description) || '';
-
-    return {
-      title: he.decode(title),
-      author: feedTitle,
-      auther: feedTitle, // 向后兼容
-      date: formatDate(pubDate),
-      link,
-      content: cleanContent(description),
-    };
-  });
+  const articles = itemList.map((item) => normalizeArticle({
+    title: extractText(item.title) || '无标题',
+    author: feedTitle,
+    date: extractText(item.pubDate) || extractText(item['dc:date']) || '',
+    link: extractLink(item.link),
+    content: cleanContent(extractText(item['content:encoded']) || extractText(item.description) || ''),
+  }));
 
   return { feed: { title: feedTitle }, articles };
 }
@@ -156,22 +233,33 @@ function parseAtom(xmlObj) {
   const entries = feed.entry || [];
   const entryList = Array.isArray(entries) ? entries : [entries];
 
-  const articles = entryList.map(entry => {
-    const title = extractText(entry.title) || '无标题';
-    const link = extractLink(entry.link);
-    const updated = extractText(entry.updated) || extractText(entry.published) || '';
-    const content = extractText(entry.content) || extractText(entry.summary) || '';
-    const authorName = extractText(entry.author?.name) || feedTitle;
+  const articles = entryList.map((entry) => normalizeArticle({
+    title: extractText(entry.title) || '无标题',
+    author: extractText(entry.author?.name) || feedTitle,
+    date: extractText(entry.updated) || extractText(entry.published) || '',
+    link: extractLink(entry.link),
+    content: cleanContent(extractText(entry.content) || extractText(entry.summary) || ''),
+  }));
 
-    return {
-      title: he.decode(title),
-      author: authorName,
-      auther: authorName,
-      date: formatDate(updated),
-      link,
-      content: cleanContent(content),
-    };
-  });
+  return { feed: { title: feedTitle }, articles };
+}
+
+function parseRDF(xmlObj) {
+  const rdf = xmlObj['rdf:RDF'];
+  if (!rdf) return { feed: null, articles: [] };
+
+  const channel = rdf.channel;
+  const items = rdf.item || [];
+  const feedTitle = extractText(channel?.title) || '未知来源';
+  const itemList = Array.isArray(items) ? items : [items];
+
+  const articles = itemList.map((item) => normalizeArticle({
+    title: extractText(item.title) || '无标题',
+    author: feedTitle,
+    date: extractText(item['dc:date']) || '',
+    link: extractLink(item.link),
+    content: cleanContent(extractText(item.description) || ''),
+  }));
 
   return { feed: { title: feedTitle }, articles };
 }
@@ -179,121 +267,311 @@ function parseAtom(xmlObj) {
 function parseFeed(xmlText) {
   try {
     const xmlObj = parser.parse(xmlText);
-
     if (xmlObj.rss) return parseRSS2(xmlObj);
     if (xmlObj.feed) return parseAtom(xmlObj);
-
-    if (xmlObj['rdf:RDF']) {
-      const channel = xmlObj['rdf:RDF'].channel;
-      const items = xmlObj['rdf:RDF'].item || [];
-      const feedTitle = extractText(channel?.title) || '未知来源';
-      const itemList = Array.isArray(items) ? items : [items];
-
-      const articles = itemList.map(item => ({
-        title: he.decode(extractText(item.title) || '无标题'),
-        author: feedTitle,
-        auther: feedTitle,
-        date: formatDate(extractText(item['dc:date']) || ''),
-        link: extractLink(item.link),
-        content: cleanContent(extractText(item.description) || ''),
-      }));
-
-      return { feed: { title: feedTitle }, articles };
-    }
-
+    if (xmlObj['rdf:RDF']) return parseRDF(xmlObj);
     throw new Error('无法识别的 Feed 格式');
   } catch (err) {
     throw new Error(`XML 解析失败: ${err.message}`);
   }
 }
 
-// ========== 主函数 ==========
+function sortArticles(articles) {
+  return articles.sort((a, b) => {
+    const timeA = a.date ? new Date(a.date).getTime() : 0;
+    const timeB = b.date ? new Date(b.date).getTime() : 0;
+    const tA = Number.isNaN(timeA) ? 0 : timeA;
+    const tB = Number.isNaN(timeB) ? 0 : timeB;
+    return tB - tA;
+  });
+}
 
-async function main() {
-  if (RSS_URLS.length === 0) {
-    console.warn('⚠️  未配置 RSS_URLS 环境变量，将使用默认测试源');
-    RSS_URLS.push('https://www.xmhai.cn/rss.xml');
-  }
+function buildSiteConfig(config) {
+  const repo = config.repo || '';
+  const repoUrl = config.repoUrl || '';
+  const repoApiBase = config.repoApiBase || '';
+  const workflowFile = config.workflowFile || 'fetch-rss.yml';
+  const workflowRunsApi = repoApiBase ? `${repoApiBase}/actions/workflows/${workflowFile}/runs?per_page=50` : '';
+  const workflowJobsApiBase = repoApiBase ? `${repoApiBase}/actions/runs` : '';
+  const workflowRunUrlBase = repoUrl ? `${repoUrl}/actions/runs` : '';
 
-  console.log(`📡 开始抓取 ${RSS_URLS.length} 个 RSS 源...`);
+  return {
+    generatedAt: new Date().toISOString(),
+    site: {
+      title: config.siteTitle,
+      description: config.siteDescription,
+      url: config.siteUrl,
+    },
+    github: {
+      repo,
+      repoUrl,
+      repoApiBase,
+      workflowFile,
+      workflowRunsApi,
+      workflowJobsApiBase,
+      workflowRunUrlBase,
+      editReadmeUrl: repoUrl ? `${repoUrl}/edit/main/README.md` : '',
+    },
+    data: {
+      articles: `/docs/${OUTPUT_FILES.articles}`,
+      buildReport: `/docs/${OUTPUT_FILES.buildReport}`,
+      siteConfig: `/docs/${OUTPUT_FILES.siteConfig}`,
+    },
+  };
+}
 
-  const outputDir = path.join(__dirname, 'docs');
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true });
-  }
+async function processFeed(url, options) {
+  const {
+    outputDir,
+    cacheEntry,
+    fetchImpl,
+    userAgent,
+    fetchTimeout,
+  } = options;
 
-  const allArticles = [];
-  let successCount = 0;
-  let failCount = 0;
+  const fileName = getSafeFileName(url);
+  const singleSourcePath = path.join(outputDir, fileName);
+  const startedAt = new Date().toISOString();
+  const startedMs = Date.now();
 
-  const results = await Promise.allSettled(
-    RSS_URLS.map(async (url) => {
-      try {
-        console.log(`  ↓ 抓取中: ${url}`);
-        const xml = await fetchRSS(url);
-        const { articles, feed } = parseFeed(xml);
-        console.log(`  ✅ ${feed?.title || '未知'}: ${articles.length} 篇`);
+  try {
+    const fetchResult = await fetchRSS(url, {
+      fetchImpl,
+      timeout: fetchTimeout,
+      userAgent,
+      cacheEntry,
+    });
 
-        // ========== 新增：每个源单独保存 JSON ==========
-        const safeFileName = getSafeFileName(url);
-        const singleSourcePath = path.join(outputDir, safeFileName);
-        const singleSourceData = articles.map(item => ({
-          title: item.title,
-          author: item.author,
-          auther: item.auther,
-          date: item.date || '未知时间',
-          link: item.link,
-          content: item.content,
-        }));
-        fs.writeFileSync(singleSourcePath, JSON.stringify(singleSourceData, null, 2));
-        console.log(`     💾 已保存单独文件: ${safeFileName} (${singleSourceData.length} 篇)`);
-        // ================================================
+    let articles;
+    let feed;
+    let status = 'success';
 
-        successCount++;
-        return articles;
-      } catch (err) {
-        console.error(`  ❌ 失败: ${url} - ${err.message}`);
-        failCount++;
-        return [];
+    if (fetchResult.status === 'not_modified') {
+      if (!cacheEntry?.articles || !cacheEntry?.feed) {
+        throw new Error('RSS 返回 304，但本地缓存缺失');
       }
+      articles = cacheEntry.articles.map(normalizeArticle);
+      feed = cacheEntry.feed;
+      status = 'cached';
+    } else {
+      const parsed = parseFeed(fetchResult.xmlText);
+      articles = parsed.articles.map(normalizeArticle);
+      feed = parsed.feed;
+    }
+
+    writeJson(singleSourcePath, articles);
+
+    const now = new Date().toISOString();
+    const nextCacheEntry = {
+      url,
+      fileName,
+      feed: { title: feed?.title || '未知来源' },
+      articles,
+      articleHash: hashJson(articles),
+      etag: fetchResult.etag || cacheEntry?.etag || '',
+      lastModified: fetchResult.lastModified || cacheEntry?.lastModified || '',
+      responseHash: fetchResult.responseHash || cacheEntry?.responseHash || '',
+      lastSuccessAt: now,
+      updatedAt: now,
+    };
+
+    return {
+      articles,
+      cacheEntry: nextCacheEntry,
+      report: {
+        url,
+        title: nextCacheEntry.feed.title,
+        fileName,
+        status,
+        articleCount: articles.length,
+        durationMs: Date.now() - startedMs,
+        lastAttemptAt: now,
+        lastSuccessAt: now,
+        usedCache: status !== 'success',
+        error: null,
+      },
+    };
+  } catch (err) {
+    if (cacheEntry?.articles?.length && cacheEntry?.feed) {
+      const fallbackArticles = cacheEntry.articles.map(normalizeArticle);
+      writeJson(singleSourcePath, fallbackArticles);
+
+      return {
+        articles: fallbackArticles,
+        cacheEntry: {
+          ...cacheEntry,
+          updatedAt: new Date().toISOString(),
+        },
+        report: {
+          url,
+          title: cacheEntry.feed.title || '未知来源',
+          fileName,
+          status: 'stale',
+          articleCount: fallbackArticles.length,
+          durationMs: Date.now() - startedMs,
+          lastAttemptAt: new Date().toISOString(),
+          lastSuccessAt: cacheEntry.lastSuccessAt || startedAt,
+          usedCache: true,
+          error: err.message,
+        },
+      };
+    }
+
+    return {
+      articles: [],
+      cacheEntry: cacheEntry || null,
+      report: {
+        url,
+        title: cacheEntry?.feed?.title || '未知来源',
+        fileName,
+        status: 'failed',
+        articleCount: 0,
+        durationMs: Date.now() - startedMs,
+        lastAttemptAt: new Date().toISOString(),
+        lastSuccessAt: cacheEntry?.lastSuccessAt || '',
+        usedCache: false,
+        error: err.message,
+      },
+    };
+  }
+}
+
+function createBuildReport(config, sourceReports, allArticles, topArticles) {
+  const summary = {
+    sourceCount: sourceReports.length,
+    successCount: sourceReports.filter((item) => item.status === 'success').length,
+    cachedCount: sourceReports.filter((item) => item.status === 'cached').length,
+    staleCount: sourceReports.filter((item) => item.status === 'stale').length,
+    failedCount: sourceReports.filter((item) => item.status === 'failed').length,
+    totalArticles: allArticles.length,
+    outputArticles: topArticles.length,
+    maxArticles: config.maxArticles,
+  };
+
+  return {
+    generatedAt: new Date().toISOString(),
+    summary,
+    site: {
+      title: config.siteTitle,
+      repo: config.repo,
+      workflowFile: config.workflowFile,
+    },
+    sources: sourceReports,
+  };
+}
+
+async function buildFeeds(options = {}) {
+  const config = {
+    ...getRuntimeConfig(),
+    ...options,
+  };
+
+  if (!Array.isArray(config.rssUrls) || config.rssUrls.length === 0) {
+    console.warn('⚠️  未配置 RSS_URLS 环境变量，将使用默认测试源');
+    config.rssUrls = [DEFAULT_TEST_SOURCE];
+  }
+
+  ensureDir(config.outputDir);
+
+  const cachePath = path.join(config.outputDir, OUTPUT_FILES.cache);
+  const previousCache = options.previousCache || readJson(cachePath, {});
+  const fetchImpl = options.fetchImpl || global.fetch;
+
+  console.log(`📡 开始抓取 ${config.rssUrls.length} 个 RSS 源...`);
+
+  const results = await Promise.all(
+    config.rssUrls.map(async (url) => {
+      console.log(`  ↓ 抓取中: ${url}`);
+      const result = await processFeed(url, {
+        outputDir: config.outputDir,
+        cacheEntry: previousCache[url] || null,
+        fetchImpl,
+        userAgent: config.defaultUA,
+        fetchTimeout: config.fetchTimeout,
+      });
+
+      const statusLabel = {
+        success: '✅ 已更新',
+        cached: '♻️  未变化',
+        stale: '⚠️  回退缓存',
+        failed: '❌ 失败',
+      }[result.report.status] || result.report.status;
+
+      console.log(`  ${statusLabel}: ${result.report.title} (${result.report.articleCount} 篇)`);
+      if (result.report.error) {
+        console.log(`     ↳ ${result.report.error}`);
+      }
+
+      return result;
     })
   );
 
-  results.forEach((r) => {
-    if (r.status === 'fulfilled') {
-      allArticles.push(...r.value);
-    }
+  const nextCache = {};
+  const sourceReports = [];
+  const allArticles = [];
+
+  results.forEach((result, index) => {
+    const url = config.rssUrls[index];
+    if (result.cacheEntry) nextCache[url] = result.cacheEntry;
+    sourceReports.push(result.report);
+    allArticles.push(...result.articles);
   });
 
-  // 排序健壮性优化：处理不合法的日期，避免 NaN 导致排序混乱
-  allArticles.sort((a, b) => {
-    const timeA = a.date ? new Date(a.date).getTime() : 0;
-    const timeB = b.date ? new Date(b.date).getTime() : 0;
-    const tA = isNaN(timeA) ? 0 : timeA;
-    const tB = isNaN(timeB) ? 0 : timeB;
-    return tB - tA;
-  });
+  sortArticles(allArticles);
+  const topArticles = allArticles.slice(0, config.maxArticles).map(normalizeArticle);
+  const buildReport = createBuildReport(config, sourceReports, allArticles, topArticles);
+  const siteConfig = buildSiteConfig(config);
 
-  // 截取并优化最终的字段（切除过长文本，防止前端加载的 JSON 太大）
-  const topArticles = allArticles.slice(0, MAX_ARTICLES).map(item => ({
-    title: item.title,
-    author: item.author,
-    auther: item.auther,
-    date: item.date || '未知时间',
-    link: item.link,
-    content: item.content,
-  }));
+  writeJson(path.join(config.outputDir, OUTPUT_FILES.articles), topArticles);
+  writeJson(path.join(config.outputDir, OUTPUT_FILES.buildReport), buildReport);
+  writeJson(path.join(config.outputDir, OUTPUT_FILES.cache), nextCache);
+  writeJson(path.join(config.outputDir, OUTPUT_FILES.siteConfig), siteConfig);
 
-  const outputPath = path.join(outputDir, 'articles.json');
-  fs.writeFileSync(outputPath, JSON.stringify(topArticles, null, 2));
-
-  console.log(`\n🎉 完成！成功 ${successCount} 个，失败 ${failCount} 个`);
-  console.log(`📝 共聚合 ${allArticles.length} 篇文章，保留最新 ${topArticles.length} 篇`);
-  console.log(`💾 聚合输出文件: ${outputPath}`);
-  console.log(`📁 各源单独文件保存在: ${outputDir}`);
+  return {
+    config,
+    allArticles,
+    topArticles,
+    buildReport,
+    siteConfig,
+    cache: nextCache,
+  };
 }
 
-main().catch((err) => {
-  console.error('❌ 执行失败:', err);
-  process.exit(1);
-});
+async function main() {
+  const result = await buildFeeds();
+  const { summary } = result.buildReport;
+
+  console.log(`\n🎉 完成！成功更新 ${summary.successCount} 个，命中缓存 ${summary.cachedCount} 个`);
+  console.log(`⚠️  使用旧缓存 ${summary.staleCount} 个，彻底失败 ${summary.failedCount} 个`);
+  console.log(`📝 共聚合 ${summary.totalArticles} 篇文章，保留最新 ${summary.outputArticles} 篇`);
+  console.log(`💾 输出目录: ${result.config.outputDir}`);
+}
+
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('❌ 执行失败:', err);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  OUTPUT_FILES,
+  buildFeeds,
+  buildSiteConfig,
+  cleanContent,
+  extractLink,
+  extractText,
+  fetchRSS,
+  formatDate,
+  getRuntimeConfig,
+  getSafeFileName,
+  normalizeArticle,
+  parseAtom,
+  parseFeed,
+  parseRDF,
+  parseRSS2,
+  processFeed,
+  readJson,
+  sortArticles,
+  writeJson,
+};
