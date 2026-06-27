@@ -112,7 +112,7 @@ function formatDate(str) {
 function extractLink(linkObj) {
   if (!linkObj) return '#';
   if (typeof linkObj === 'string') return linkObj;
-  if (typeof obj === 'object') {
+  if (typeof linkObj === 'object') {
     if (linkObj['@_href']) return linkObj['@_href'];
     if (linkObj['#text']) return linkObj['#text'];
   }

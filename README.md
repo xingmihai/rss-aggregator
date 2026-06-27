@@ -22,9 +22,13 @@ rss-aggregator/
 ├── .github/
 │   └── workflows/
 │       └── fetch-rss.yml      # GitHub Actions 工作流配置
-├── docs/                     # Cloudflare Pages 输出目录
-│   └── articles.json           # 自动生成的 RSS 聚合数据
-├── build.js                    # RSS 抓取与解析脚本
+├── docs/                      # 静态 JSON 输出目录
+│   ├── articles.json          # 聚合后的最新文章数据
+│   └── *.json                 # 每个 RSS 源单独生成的 JSON
+├── build.js                   # RSS 抓取与解析脚本
+├── index.html                 # 前端页面结构
+├── styles.css                 # 前端样式
+├── app.js                     # 前端交互逻辑
 └── README.md
 ```
 
@@ -61,7 +65,7 @@ https://www.xmhai.cn/rss.xml,https://example.com/feed.xml
 前端调用示例：
 
 ```javascript
-fetch('/articles.json')
+fetch('/docs/articles.json')
   .then(r => r.json())
   .then(articles => {
     articles.forEach(article => {
@@ -78,8 +82,9 @@ fetch('/articles.json')
 [
   {
     "title": "文章标题",
+    "author": "来源站点名称",
     "auther": "来源站点名称",
-    "date": "2026-06-20",
+    "date": "2026-06-20T08:00:00.000Z",
     "link": "https://example.com/article",
     "content": "文章摘要内容..."
   }
@@ -104,7 +109,11 @@ on:
 
 ## 支持的 RSS 格式
 
-目前支持标准 RSS 2.0 格式（`<channel>` + `<item>`）。如需支持 Atom 或其他格式，可在 `build.js` 中扩展解析逻辑。
+目前支持以下常见 Feed 格式：
+
+- RSS 2.0（`<rss><channel><item>`）
+- Atom（`<feed><entry>`）
+- RDF / RSS 1.0（`<rdf:RDF><item>`）
 
 ## 注意事项
 
