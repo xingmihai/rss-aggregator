@@ -52,23 +52,61 @@
   <!-- Home Page -->
   <div class="page-view active" id="page-home">
     <section class="hero">
-      <div class="container">
-        <div class="hero-badge">
-          <span class="dot"></span>
-          零成本 · 无限制 · 自动化
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <div class="hero-badge">
+            <span class="dot"></span>
+            零成本 · 自动采集 · 全球分发
+          </div>
+          <h1>你的专属 RSS 信息驾驶舱</h1>
+          <p>把多个 RSS 源自动聚合成一份清爽 JSON，并用优雅的静态页面呈现最新文章、来源健康和工作流状态。</p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" id="gotoArticles">
+              <span>📰</span> 浏览文章
+            </button>
+            <button class="btn btn-secondary" id="gotoWorkflow">
+              <span>⚙️</span> 工作流状态
+            </button>
+            <a href="https://github.com/xingmihai/rss-aggregator" class="btn btn-secondary" target="_blank" rel="noopener">
+              <span>⭐</span> GitHub 仓库
+            </a>
+          </div>
         </div>
-        <h1>RSS 聚合器</h1>
-        <p>使用 GitHub Actions 定时抓取多个 RSS 源，生成静态 JSON 文件，通过 Cloudflare Pages 全球 CDN 分发。</p>
-        <div class="hero-actions">
-          <button class="btn btn-primary" id="gotoArticles">
-            <span>📰</span> 浏览文章
-          </button>
-          <button class="btn btn-secondary" id="gotoWorkflow">
-            <span>⚙️</span> 工作流状态
-          </button>
-          <a href="https://github.com/xingmihai/rss-aggregator" class="btn btn-secondary" target="_blank" rel="noopener">
-            <span>⭐</span> GitHub 仓库
-          </a>
+
+        <div class="hero-panel" aria-label="RSS 聚合器界面预览">
+          <div class="panel-toolbar">
+            <span></span><span></span><span></span>
+            <strong>Live Feed</strong>
+          </div>
+          <div class="panel-metrics">
+            <div><b>15min</b><span>自动更新</span></div>
+            <div><b>20</b><span>最新文章</span></div>
+            <div><b>¥0</b><span>运行成本</span></div>
+          </div>
+          <div class="feed-preview-card featured">
+            <span class="feed-dot"></span>
+            <div>
+              <strong>全站 RSS 已同步完成</strong>
+              <p>GitHub Actions 抓取多个源并生成 articles.json</p>
+            </div>
+            <em>刚刚</em>
+          </div>
+          <div class="feed-preview-card">
+            <span class="feed-dot purple"></span>
+            <div>
+              <strong>来源健康状态正常</strong>
+              <p>自动统计各源文章数量与近 7 天更新频率</p>
+            </div>
+            <em>2m</em>
+          </div>
+          <div class="feed-preview-card">
+            <span class="feed-dot green"></span>
+            <div>
+              <strong>静态 JSON API 可直接调用</strong>
+              <p>前端、阅读器或自动化脚本都能轻松接入</p>
+            </div>
+            <em>API</em>
+          </div>
         </div>
       </div>
     </section>
