@@ -22,12 +22,13 @@ rss-aggregator/
 ├── .github/
 │   └── workflows/
 │       └── fetch-rss.yml      # GitHub Actions 工作流配置
-├── docs/                     # Cloudflare Pages 输出目录
-│   └── articles.json           # 自动生成的 RSS 聚合数据
-├── assets/                    # 前端静态资源
-│   ├── styles.css             # 页面样式
-│   └── app.js                 # 页面交互逻辑
-├── build.js                   # RSS/Atom/RDF 抓取与解析脚本
+├── docs/                      # 静态 JSON 输出目录
+│   ├── articles.json          # 聚合后的最新文章数据
+│   └── *.json                 # 每个 RSS 源单独生成的 JSON
+├── build.js                   # RSS 抓取与解析脚本
+├── index.html                 # 前端页面结构
+├── styles.css                 # 前端样式
+├── app.js                     # 前端交互逻辑
 └── README.md
 ```
 
@@ -82,7 +83,8 @@ fetch('/docs/articles.json')
   {
     "title": "文章标题",
     "author": "来源站点名称",
-    "date": "2026-06-20",
+    "auther": "来源站点名称",
+    "date": "2026-06-20T08:00:00.000Z",
     "link": "https://example.com/article",
     "content": "文章摘要内容..."
   }
@@ -108,7 +110,11 @@ on:
 
 ## 支持的 RSS 格式
 
-目前支持 **RSS 2.0**、**Atom** 和 **RDF** 格式。解析逻辑集中在 `build.js`，可继续扩展更多 Feed 方言。
+目前支持以下常见 Feed 格式：
+
+- RSS 2.0（`<rss><channel><item>`）
+- Atom（`<feed><entry>`）
+- RDF / RSS 1.0（`<rdf:RDF><item>`）
 
 ## 注意事项
 
