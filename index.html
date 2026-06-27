@@ -51,23 +51,83 @@
   <!-- Home Page -->
   <div class="page-view active" id="page-home">
     <section class="hero">
-      <div class="container">
-        <div class="hero-badge">
-          <span class="dot"></span>
-          零成本 · 无限制 · 自动化
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <div class="hero-badge">
+            <span class="dot"></span>
+            零成本 · 无限制 · 自动化
+          </div>
+          <h1>把多个 RSS 源，聚合成一个更好看的阅读入口</h1>
+          <p>使用 GitHub Actions 定时抓取多个 RSS 源，生成静态 JSON 文件，通过 Cloudflare Pages 全球 CDN 分发，让你的聚合页既稳定，又足够轻量。</p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" id="gotoArticles">
+              <span>📰</span> 浏览文章
+            </button>
+            <button class="btn btn-secondary" id="gotoWorkflow">
+              <span>⚙️</span> 工作流状态
+            </button>
+            <a href="https://github.com/xingmihai/rss-aggregator" class="btn btn-secondary" target="_blank" rel="noopener">
+              <span>⭐</span> GitHub 仓库
+            </a>
+          </div>
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <strong>15 min</strong>
+              <span>自动更新</span>
+            </div>
+            <div class="hero-stat">
+              <strong>JSON API</strong>
+              <span>前端即取即用</span>
+            </div>
+            <div class="hero-stat">
+              <strong>RSS / Atom / RDF</strong>
+              <span>常见格式兼容</span>
+            </div>
+          </div>
         </div>
-        <h1>RSS 聚合器</h1>
-        <p>使用 GitHub Actions 定时抓取多个 RSS 源，生成静态 JSON 文件，通过 Cloudflare Pages 全球 CDN 分发。</p>
-        <div class="hero-actions">
-          <button class="btn btn-primary" id="gotoArticles">
-            <span>📰</span> 浏览文章
-          </button>
-          <button class="btn btn-secondary" id="gotoWorkflow">
-            <span>⚙️</span> 工作流状态
-          </button>
-          <a href="https://github.com/xingmihai/rss-aggregator" class="btn btn-secondary" target="_blank" rel="noopener">
-            <span>⭐</span> GitHub 仓库
-          </a>
+        <div class="hero-showcase" aria-hidden="true">
+          <div class="hero-panel">
+            <div class="hero-panel-top">
+              <span class="hero-panel-title">实时聚合看板</span>
+              <span class="hero-panel-status">Live</span>
+            </div>
+            <div class="hero-preview-card hero-preview-card-accent">
+              <div class="preview-label">Latest Feed</div>
+              <div class="preview-title">RSS 聚合器把多源内容统一成一个阅读入口</div>
+              <div class="preview-meta">
+                <span>笑的博客</span>
+                <span>2 分钟前</span>
+              </div>
+            </div>
+            <div class="hero-preview-grid">
+              <div class="hero-preview-card">
+                <div class="preview-label">Update Cycle</div>
+                <div class="preview-metric">15 分钟</div>
+                <div class="preview-subtle">定时抓取与静态发布</div>
+              </div>
+              <div class="hero-preview-card">
+                <div class="preview-label">Source Status</div>
+                <div class="preview-dots">
+                  <span class="preview-dot active"></span>
+                  <span class="preview-dot active"></span>
+                  <span class="preview-dot warning"></span>
+                  <span class="preview-dot active"></span>
+                </div>
+                <div class="preview-subtle">多源健康状态可视化</div>
+              </div>
+            </div>
+            <div class="hero-bars">
+              <span style="width: 92%"></span>
+              <span style="width: 76%"></span>
+              <span style="width: 61%"></span>
+              <span style="width: 48%"></span>
+            </div>
+            <div class="hero-pill-row">
+              <span class="hero-pill">GitHub Actions</span>
+              <span class="hero-pill">Cloudflare Pages</span>
+              <span class="hero-pill">Static JSON</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -163,7 +223,7 @@
                 <span class="code-block-lang">JavaScript</span>
                 <button class="copy-btn" data-code>复制</button>
               </div>
-              <pre><code><span class="code-function">fetch</span><span class="code-punctuation">(</span><span class="code-string">'/articles.json'</span><span class="code-punctuation">)</span>
+              <pre><code><span class="code-function">fetch</span><span class="code-punctuation">(</span><span class="code-string">'/docs/articles.json'</span><span class="code-punctuation">)</span>
   <span class="code-punctuation">.</span><span class="code-function">then</span><span class="code-punctuation">(</span><span class="code-keyword">r</span> <span class="code-keyword">=&gt;</span> <span class="code-keyword">r</span><span class="code-punctuation">.</span><span class="code-function">json</span><span class="code-punctuation">())</span>
   <span class="code-punctuation">.</span><span class="code-function">then</span><span class="code-punctuation">(</span><span class="code-keyword">articles</span> <span class="code-keyword">=&gt;</span> <span class="code-punctuation">{</span>
     <span class="code-keyword">articles</span><span class="code-punctuation">.</span><span class="code-function">forEach</span><span class="code-punctuation">(</span><span class="code-keyword">article</span> <span class="code-keyword">=&gt;</span> <span class="code-punctuation">{</span>
@@ -223,7 +283,11 @@
           <span class="section-icon">📡</span>
           支持的 RSS 格式
         </h2>
-        <p>目前支持标准 RSS 2.0 格式（<code>&lt;channel&gt;</code> + <code>&lt;item&gt;</code>）。如需支持 Atom 或其他格式，可在 <code>build.js</code> 中扩展解析逻辑。</p>
+        <ul>
+          <li>RSS 2.0（<code>&lt;rss&gt;&lt;channel&gt;&lt;item&gt;</code>）</li>
+          <li>Atom（<code>&lt;feed&gt;&lt;entry&gt;</code>）</li>
+          <li>RDF / RSS 1.0（<code>&lt;rdf:RDF&gt;&lt;item&gt;</code>）</li>
+        </ul>
       </section>
 
       <section class="content-section">
