@@ -19,6 +19,15 @@
   <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css">
 </head>
 <body>
+  
+  <!-- 首页 Loading 遮罩 -->
+<div class="home-loading" id="homeLoading">
+  <div class="home-loading-inner">
+    <div class="home-spinner"></div>
+    <div class="home-loading-text">正在加载…</div>
+  </div>
+</div>
+
 
   <!-- Reading Progress Bar -->
   <div class="reading-progress" id="readingProgress"></div>
@@ -523,49 +532,65 @@
 
   let walineInstance = null;
 
-const initWalineWhenReady = async () => {
-  const container = document.getElementById('waline');
-  if (!container) return;
+  // ✅ Waline 预加载完成后的回调
+  const onWalineReady = () => {
+    const homePage = document.getElementById('page-home');
+    const loading = document.getElementById('homeLoading');
 
-  const { init } = await import('https://unpkg.com/@waline/client@v3/dist/waline.js');
+    homePage?.classList.add('home-ready');
+    loading?.classList.add('hidden');
+  };
 
-  window.WalineInstance = init({
-    el: '#waline',
-    serverURL: 'https://vercel-waline.xmhai.cn',
-    path: location.pathname + location.hash,
-    pageview: true,
-    comment: true,
-    locale: {
-      placeholder: '写下你的想法…',
-      sofa: '暂无评论，来发第一条吧 🌱',
-    },
-    // ✅ 关键：Waline 渲染完成回调
-    mounted: () => {
-      document.getElementById('articlesLoading')?.classList.add('hidden');
-    },
-  });
-};
+  // ✅ 真正的初始化（文章页用）
+  const initWalineWhenReady = async () => {
+    const container = document.getElementById('waline');
+    if (!container) return;
 
-  // ✅ 核心：等 DOM 真正插入后再初始化
-  const observeWaline = () => {
-    const observer = new MutationObserver(() => {
-      if (document.getElementById('waline')) {
-        initWalineWhenReady();
-        observer.disconnect();
-      }
-    });
+    if (walineInstance) {
+      walineInstance.destroy();
+    }
 
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
+    walineInstance = init({
+      el: '#waline',
+      serverURL: 'https://vercel-waline.xmhai.cn',
+      path: location.pathname + location.hash,
+      pageview: true,
+      comment: true,
+      locale: {
+        placeholder: '写下你的想法…',
+        sofa: '暂无评论，来发第一条吧 🌱',
+      },
+      mounted: () => {
+        // 文章页不需要再管首页 loading
+      },
     });
   };
 
+  // ✅ 预加载 Waline（首页一打开就跑）
+  (async () => {
+    try {
+      // 只 import，不 init，目的是“预热”
+      await import('https://unpkg.com/@waline/client@v3/dist/waline.js');
+      onWalineReady();
+    } catch (e) {
+      // 即使 Waline 挂了，首页也要能打开
+      console.warn('Waline preload failed:', e);
+      onWalineReady();
+    }
+  })();
+
+  // ✅ 给文章页用的初始化接口
   window.initWaline = () => {
     if (document.getElementById('waline')) {
       initWalineWhenReady();
     } else {
-      observeWaline();
+      const observer = new MutationObserver(() => {
+        if (document.getElementById('waline')) {
+          initWalineWhenReady();
+          observer.disconnect();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
     }
   };
 </script>
