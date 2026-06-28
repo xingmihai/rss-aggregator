@@ -551,19 +551,32 @@
     }
 
     walineInstance = init({
-      el: '#waline',
-      serverURL: 'https://vercel-waline.xmhai.cn',
-      path: location.pathname + location.hash,
-      pageview: true,
-      comment: true,
-      locale: {
-        placeholder: '写下你的想法…',
-        sofa: '暂无评论，来发第一条吧 🌱',
-      },
-      mounted: () => {
-        // 文章页不需要再管首页 loading
-      },
-    });
+  el: '#waline',
+  serverURL: 'https://vercel-waline.xmhai.cn',
+  path: location.pathname + location.hash,
+  pageview: true,
+  comment: true,
+
+  // ✅ UI 相关
+  login: 'disable',          // 禁用内置登录（用 Waline 自带匿名即可）
+  meta: ['nick', 'mail'],   // 只留昵称 + 邮箱
+  requiredMeta: ['nick'],   // 昵称必填
+  locale: {
+    placeholder: '留下你的想法…',
+    sofa: '还没有评论，来发第一条吧 🌱',
+    submit: '发布',
+    comments: '评论',
+    cancelComment: '取消',
+  },
+
+  // ✅ 行为
+  reaction: false,           // 暂时关闭反应（UI 更干净）
+  emoji: [
+    '//unpkg.com/@waline/emojis@1.2.0/weibo',
+    '//unpkg.com/@waline/emojis@1.2.0/bmoji',
+  ],
+});
+
   };
 
   // ✅ 预加载 Waline（首页一打开就跑）
