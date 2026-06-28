@@ -13,7 +13,10 @@
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary">
   <link rel="shortcut icon" type="image/x-icon" href="https://q1.qlogo.cn/g?b=qq&nk=1498934815&s=1">
+
   <link rel="stylesheet" href="./styles.css">
+  <!-- Waline 样式 -->
+  <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css">
 </head>
 <body>
 
@@ -117,10 +120,10 @@
               </div>
             </div>
             <div class="hero-bars">
-              <span style="width: 92%"></span>
-              <span style="width: 76%"></span>
-              <span style="width: 61%"></span>
-              <span style="width: 48%"></span>
+              <span style="width:92%"></span>
+              <span style="width:76%"></span>
+              <span style="width:61%"></span>
+              <span style="width:48%"></span>
             </div>
             <div class="hero-pill-row">
               <span class="hero-pill">GitHub Actions</span>
@@ -236,7 +239,7 @@
                 <span class="code-block-lang">Path</span>
                 <button class="copy-btn" data-code>复制</button>
               </div>
-              <pre><code>/docs/articles.json</code></pre>
+              <pre><code>/docs/index.json</code></pre>
             </div>
             <p>前端调用示例：</p>
             <div class="code-block-wrapper">
@@ -244,7 +247,7 @@
                 <span class="code-block-lang">JavaScript</span>
                 <button class="copy-btn" data-code>复制</button>
               </div>
-              <pre><code><span class="code-function">fetch</span><span class="code-punctuation">(</span><span class="code-string">'/docs/articles.json'</span><span class="code-punctuation">)</span>
+              <pre><code><span class="code-function">fetch</span><span class="code-punctuation">(</span><span class="code-string">'/docs/index.json'</span><span class="code-punctuation">)</span>
   <span class="code-punctuation">.</span><span class="code-function">then</span><span class="code-punctuation">(</span><span class="code-keyword">r</span> <span class="code-keyword">=&gt;</span> <span class="code-keyword">r</span><span class="code-punctuation">.</span><span class="code-function">json</span><span class="code-punctuation">())</span>
   <span class="code-punctuation">.</span><span class="code-function">then</span><span class="code-punctuation">(</span><span class="code-keyword">articles</span> <span class="code-keyword">=&gt;</span> <span class="code-punctuation">{</span>
     <span class="code-keyword">articles</span><span class="code-punctuation">.</span><span class="code-function">forEach</span><span class="code-punctuation">(</span><span class="code-keyword">article</span> <span class="code-keyword">=&gt;</span> <span class="code-punctuation">{</span>
@@ -333,6 +336,7 @@
       </section>
     </main>
   </div>
+</div>
 
   <!-- Articles Page -->
   <div class="page-view" id="page-articles">
@@ -421,9 +425,18 @@
           <span>正在加载文章...</span>
         </div>
       </div>
+
+      <!-- Waline 评论区 -->
+      <div class="comments-section">
+        <h2>
+          <span class="section-icon">💬</span>
+          评论区
+        </h2>
+        <div id="waline"></div>
+      </div>
+
     </main>
   </div>
-
 
   <!-- Workflow Status Page -->
   <div class="page-view" id="page-workflow">
@@ -504,6 +517,58 @@
   <div class="toast" id="toast"></div>
 
   <script src="./app.js"></script>
+
+<script type="module">
+  import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js';
+
+  let walineInstance = null;
+
+const initWalineWhenReady = async () => {
+  const container = document.getElementById('waline');
+  if (!container) return;
+
+  const { init } = await import('https://unpkg.com/@waline/client@v3/dist/waline.js');
+
+  window.WalineInstance = init({
+    el: '#waline',
+    serverURL: 'https://vercel-waline.xmhai.cn',
+    path: location.pathname + location.hash,
+    pageview: true,
+    comment: true,
+    locale: {
+      placeholder: '写下你的想法…',
+      sofa: '暂无评论，来发第一条吧 🌱',
+    },
+    // ✅ 关键：Waline 渲染完成回调
+    mounted: () => {
+      document.getElementById('articlesLoading')?.classList.add('hidden');
+    },
+  });
+};
+
+  // ✅ 核心：等 DOM 真正插入后再初始化
+  const observeWaline = () => {
+    const observer = new MutationObserver(() => {
+      if (document.getElementById('waline')) {
+        initWalineWhenReady();
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  };
+
+  window.initWaline = () => {
+    if (document.getElementById('waline')) {
+      initWalineWhenReady();
+    } else {
+      observeWaline();
+    }
+  };
+</script>
 
 </body>
 </html>
