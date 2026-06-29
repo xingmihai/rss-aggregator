@@ -98,10 +98,19 @@
 
 
       currentPage = page;
-
+      
       if (page === 'articles' && !articlesLoaded) {
-        setTimeout(() => loadArticles(), 350);
-      }
+  setTimeout(() => loadArticles(), 350);
+}
+
+
+ if (page === 'articles') {
+  setTimeout(() => {
+    if (window.initWaline) window.initWaline();
+  }, 0);
+}
+
+
       if (page === 'workflow' && !wfLoaded) {
         setTimeout(() => loadWorkflows(), 350);
       }

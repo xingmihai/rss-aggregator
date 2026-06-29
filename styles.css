@@ -1,4 +1,4 @@
-    :root {
+:root {
       --bg-primary: #0d1117;
       --bg-secondary: #161b22;
       --bg-tertiary: #21262d;
@@ -769,7 +769,6 @@
     .toast.success { border-color: var(--success); }
     .toast.error { border-color: var(--danger); }
 
-    
     /* ===== Touch Optimization ===== */
     @media (hover: none) and (pointer: coarse) {
       .article-card:hover { transform: none; box-shadow: var(--shadow); }
@@ -784,8 +783,6 @@
       .filter-bar input, .filter-bar select { min-height: 44px; }
       #backToHome, #backToHomeWorkflow { min-height: 40px; padding: 8px 16px; }
     }
-
-
 
     /* ===== Workflow Detail Panel ===== */
     .workflow-card { cursor: pointer; }
@@ -1108,3 +1105,102 @@
       .workflow-commit-msg { font-size: 12px; margin-top: 6px; padding-top: 6px; }
       .workflow-pagination { margin-top: 16px; }
     }
+
+    /* ===== Waline 风格适配 ===== */
+    .comments-section {
+      margin-top: 48px;
+      padding: 24px;
+      border-radius: var(--radius);
+      background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.045),
+        rgba(255, 255, 255, 0.02)
+      );
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* 暗色主题 */
+    [data-theme="dark"] .wl-editor,
+    [data-theme="dark"] .wl-input,
+    [data-theme="dark"] .wl-panel {
+      background: var(--bg-secondary) !important;
+      color: var(--text-primary) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    [data-theme="dark"] .wl-btn {
+      background: var(--accent) !important;
+      color: #fff !important;
+      border: none !important;
+    }
+
+    /* 亮色主题 */
+    [data-theme="light"] .comments-section {
+      background: linear-gradient(
+        180deg,
+        var(--accent-soft),
+        rgba(255, 255, 255, 0.85)
+      );
+    }
+
+    /* 移动端适配 */
+    @media (max-width: 640px) {
+      .comments-section {
+        padding: 16px;
+        margin-top: 32px;
+      }
+    }
+
+/* ===== 首页 Loading ===== */
+.home-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+.home-loading.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.home-loading-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.home-spinner {
+  width: 52px;
+  height: 52px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.home-loading-text {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* 首页初始隐藏（关键） */
+#page-home {
+  visibility: hidden;
+  opacity: 0;
+}
+
+#page-home.home-ready {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.6s ease;
+}

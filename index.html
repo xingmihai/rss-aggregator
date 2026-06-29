@@ -13,9 +13,21 @@
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary">
   <link rel="shortcut icon" type="image/x-icon" href="https://q1.qlogo.cn/g?b=qq&nk=1498934815&s=1">
+
   <link rel="stylesheet" href="./styles.css">
+  <!-- Waline 样式 -->
+  <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css">
 </head>
 <body>
+  
+  <!-- 首页 Loading 遮罩 -->
+<div class="home-loading" id="homeLoading">
+  <div class="home-loading-inner">
+    <div class="home-spinner"></div>
+    <div class="home-loading-text">正在加载…</div>
+  </div>
+</div>
+
 
   <!-- Reading Progress Bar -->
   <div class="reading-progress" id="readingProgress"></div>
@@ -117,10 +129,10 @@
               </div>
             </div>
             <div class="hero-bars">
-              <span style="width: 92%"></span>
-              <span style="width: 76%"></span>
-              <span style="width: 61%"></span>
-              <span style="width: 48%"></span>
+              <span style="width:92%"></span>
+              <span style="width:76%"></span>
+              <span style="width:61%"></span>
+              <span style="width:48%"></span>
             </div>
             <div class="hero-pill-row">
               <span class="hero-pill">GitHub Actions</span>
@@ -236,7 +248,7 @@
                 <span class="code-block-lang">Path</span>
                 <button class="copy-btn" data-code>复制</button>
               </div>
-              <pre><code>/docs/articles.json</code></pre>
+              <pre><code>/docs/index.json</code></pre>
             </div>
             <p>前端调用示例：</p>
             <div class="code-block-wrapper">
@@ -244,7 +256,7 @@
                 <span class="code-block-lang">JavaScript</span>
                 <button class="copy-btn" data-code>复制</button>
               </div>
-              <pre><code><span class="code-function">fetch</span><span class="code-punctuation">(</span><span class="code-string">'/docs/articles.json'</span><span class="code-punctuation">)</span>
+              <pre><code><span class="code-function">fetch</span><span class="code-punctuation">(</span><span class="code-string">'/docs/index.json'</span><span class="code-punctuation">)</span>
   <span class="code-punctuation">.</span><span class="code-function">then</span><span class="code-punctuation">(</span><span class="code-keyword">r</span> <span class="code-keyword">=&gt;</span> <span class="code-keyword">r</span><span class="code-punctuation">.</span><span class="code-function">json</span><span class="code-punctuation">())</span>
   <span class="code-punctuation">.</span><span class="code-function">then</span><span class="code-punctuation">(</span><span class="code-keyword">articles</span> <span class="code-keyword">=&gt;</span> <span class="code-punctuation">{</span>
     <span class="code-keyword">articles</span><span class="code-punctuation">.</span><span class="code-function">forEach</span><span class="code-punctuation">(</span><span class="code-keyword">article</span> <span class="code-keyword">=&gt;</span> <span class="code-punctuation">{</span>
@@ -333,6 +345,7 @@
       </section>
     </main>
   </div>
+</div>
 
   <!-- Articles Page -->
   <div class="page-view" id="page-articles">
@@ -421,9 +434,18 @@
           <span>正在加载文章...</span>
         </div>
       </div>
+
+      <!-- Waline 评论区 -->
+      <div class="comments-section">
+        <h2>
+          <span class="section-icon">💬</span>
+          评论区
+        </h2>
+        <div id="waline"></div>
+      </div>
+
     </main>
   </div>
-
 
   <!-- Workflow Status Page -->
   <div class="page-view" id="page-workflow">
@@ -504,6 +526,87 @@
   <div class="toast" id="toast"></div>
 
   <script src="./app.js"></script>
+
+<script type="module">
+  import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js';
+
+  let walineInstance = null;
+
+  // ✅ Waline 预加载完成后的回调
+  const onWalineReady = () => {
+    const homePage = document.getElementById('page-home');
+    const loading = document.getElementById('homeLoading');
+
+    homePage?.classList.add('home-ready');
+    loading?.classList.add('hidden');
+  };
+
+  // ✅ 真正的初始化（文章页用）
+  const initWalineWhenReady = async () => {
+    const container = document.getElementById('waline');
+    if (!container) return;
+
+    if (walineInstance) {
+      walineInstance.destroy();
+    }
+
+    walineInstance = init({
+  el: '#waline',
+  serverURL: 'https://vercel-waline.xmhai.cn',
+  path: location.pathname + location.hash,
+  pageview: true,
+  comment: true,
+
+  // ✅ UI 相关
+  login: 'disable',          // 禁用内置登录（用 Waline 自带匿名即可）
+  meta: ['nick', 'mail'],   // 只留昵称 + 邮箱
+  requiredMeta: ['nick', 'mail'],   // 昵称必填
+  locale: {
+    placeholder: '留下你的想法…',
+    sofa: '还没有评论，来发第一条吧 🌱',
+    submit: '发布',
+    comments: '评论',
+    cancelComment: '取消',
+  },
+
+  // ✅ 行为
+  reaction: false,           // 暂时关闭反应（UI 更干净）
+  emoji: [
+    '//unpkg.com/@waline/emojis@1.2.0/weibo',
+    '//unpkg.com/@waline/emojis@1.2.0/bmoji',
+  ],
+});
+
+  };
+
+  // ✅ 预加载 Waline（首页一打开就跑）
+  (async () => {
+    try {
+      // 只 import，不 init，目的是“预热”
+      await import('https://unpkg.com/@waline/client@v3/dist/waline.js');
+      onWalineReady();
+    } catch (e) {
+      // 即使 Waline 挂了，首页也要能打开
+      console.warn('Waline preload failed:', e);
+      onWalineReady();
+    }
+  })();
+
+  // ✅ 给文章页用的初始化接口
+  window.initWaline = () => {
+    if (document.getElementById('waline')) {
+      initWalineWhenReady();
+    } else {
+      const observer = new MutationObserver(() => {
+        if (document.getElementById('waline')) {
+          initWalineWhenReady();
+          observer.disconnect();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+  };
+</script>
 
 </body>
 </html>
