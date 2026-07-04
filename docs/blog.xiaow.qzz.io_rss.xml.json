@@ -1,5 +1,13 @@
 [
   {
+    "title": "分享一个IP签名档/IP卡片源码",
+    "author": "笑的博客",
+    "auther": "笑的博客",
+    "date": "2026-07-05T01:06:35.000Z",
+    "link": "https://blog.xiaow.qzz.io/article/ip-signature-card/",
+    "content": "前言每次有人打开你的博客，底部挂着张图，图上显示TA自己的IP、所在城市、实时天气、用的什么系统和浏览器——这种小东西挺有意思的。效果大概长这样：上面这是美化版的，下面是正常版的预览部署不算复杂，前后半小时搞定。你需要什么一台Linux服务器（1C1G够用）PHP8.0+，带GD、curl、mbst"
+  },
+  {
     "title": "弄了一个专为vh-astro博客设计的友链管理系统，把烦人操作全扔了",
     "author": "笑的博客",
     "auther": "笑的博客",
