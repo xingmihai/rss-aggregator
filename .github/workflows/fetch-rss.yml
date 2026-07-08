@@ -29,12 +29,12 @@ jobs:
         env:
           RSS_URLS: ${{ secrets.RSS_URLS }}
           MAX_ARTICLES: ${{ vars.MAX_ARTICLES }}
+          BETTERSTACK_HEARTBEAT_URL: ${{ secrets.BETTERSTACK_HEARTBEAT_URL }}
 
       - name: Commit and Push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # 新增：提交所有 docs/*.json 文件（包括聚合文件和各源单独文件）
           git add docs/*.json
           git diff --cached --quiet || git commit -m "Update RSS feed [$(date +%Y-%m-%d_%H:%M)]"
           git push
