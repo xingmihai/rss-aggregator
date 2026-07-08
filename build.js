@@ -1,4 +1,4 @@
-// build.js - 抓取 RSS 并生成静态 JSON（终极优化版）
+// build.js - 抓取 RSS 并生成静态 JSON（终极优化版 + BetterStack 心跳监控）
 const fs = require('fs');
 const path = require('path');
 const { XMLParser } = require('fast-xml-parser');
@@ -9,6 +9,9 @@ const RSS_URLS = (process.env.RSS_URLS || '').split(',').map(u => u.trim()).filt
 const MAX_ARTICLES = parseInt(process.env.MAX_ARTICLES || '20', 10);
 const DEFAULT_UA = 'Mozilla/5.0 (compatible; RSS Aggregator/1.0)';
 const FETCH_TIMEOUT = 12000; // 12秒请求超时限制
+
+// BetterStack 心跳监控配置
+const BETTERSTACK_HEARTBEAT_URL = process.env.BETTERSTACK_HEARTBEAT_URL || '';
 
 // XML 解析器配置
 const parser = new XMLParser({
@@ -23,21 +26,54 @@ const parser = new XMLParser({
 // ========== 工具函数 ==========
 
 /**
+ * 上报 BetterStack 心跳
+ * @param {boolean} success - 是否成功
+ * @param {string} output - 可选的失败输出信息
+ */
+async function reportHeartbeat(success, output = '') {
+  if (!BETTERSTACK_HEARTBEAT_URL) return;
+
+  const url = success
+    ? BETTERSTACK_HEARTBEAT_URL
+    : `${BETTERSTACK_HEARTBEAT_URL}/fail`;
+
+  try {
+    const options = {
+      method: 'GET',
+      headers: { 'User-Agent': DEFAULT_UA },
+    };
+
+    // 失败时附带输出信息（BetterStack 支持 POST body 传输出内容）
+    if (!success && output) {
+      options.method = 'POST';
+      options.body = output;
+      options.headers['Content-Type'] = 'text/plain';
+    }
+
+    const res = await fetch(url, options);
+    if (!res.ok) {
+      console.warn(`⚠️ 心跳上报失败: HTTP ${res.status}`);
+    } else {
+      console.log(`💓 心跳已上报${success ? '（成功）' : '（失败）'}`);
+    }
+  } catch (err) {
+    console.warn(`⚠️ 心跳上报异常: ${err.message}`);
+  }
+}
+
+/**
  * 生成安全的文件名（基于 URL）
  */
 function getSafeFileName(url) {
   try {
     const urlObj = new URL(url);
-    // 使用 hostname + pathname 生成唯一文件名，替换非法字符
     let name = urlObj.hostname + urlObj.pathname;
     name = name.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
-    // 限制长度，避免文件名过长
     if (name.length > 100) {
       name = name.substring(0, 100);
     }
     return name + '.json';
   } catch {
-    // 如果 URL 解析失败，使用简单的哈希方式
     const hash = Buffer.from(url).toString('base64').replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
     return `rss_${hash}.json`;
   }
@@ -53,12 +89,12 @@ async function fetchRSS(url) {
   try {
     const res = await fetch(url, {
       headers: { 'User-Agent': DEFAULT_UA },
-      signal: controller.signal, // 绑定超时信号
+      signal: controller.signal,
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.text();
   } finally {
-    clearTimeout(timeoutId); // 务必清除定时器
+    clearTimeout(timeoutId);
   }
 }
 
@@ -82,13 +118,9 @@ function extractText(obj) {
  */
 function cleanContent(html) {
   if (!html) return '';
-  // 移除潜在的 script/style 标签及内容，防止垃圾数据或安全隐患
   let text = html.replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, '');
-  // 先解码 HTML 实体
   text = he.decode(text, { isAttributeValue: false, strict: false });
-  // 移除 HTML 标签
   text = text.replace(/<[^>]*>/g, ' ');
-  // 合并空白字符
   return text.replace(/\s+/g, ' ').trim();
 }
 
@@ -138,7 +170,7 @@ function parseRSS2(xmlObj) {
     return {
       title: he.decode(title),
       author: feedTitle,
-      auther: feedTitle, // 向后兼容
+      auther: feedTitle,
       date: formatDate(pubDate),
       link,
       content: cleanContent(description),
@@ -225,6 +257,7 @@ async function main() {
   const allArticles = [];
   let successCount = 0;
   let failCount = 0;
+  const errors = [];
 
   const results = await Promise.allSettled(
     RSS_URLS.map(async (url) => {
@@ -234,7 +267,6 @@ async function main() {
         const { articles, feed } = parseFeed(xml);
         console.log(`  ✅ ${feed?.title || '未知'}: ${articles.length} 篇`);
 
-        // ========== 新增：每个源单独保存 JSON ==========
         const safeFileName = getSafeFileName(url);
         const singleSourcePath = path.join(outputDir, safeFileName);
         const singleSourceData = articles.map(item => ({
@@ -247,12 +279,13 @@ async function main() {
         }));
         fs.writeFileSync(singleSourcePath, JSON.stringify(singleSourceData, null, 2));
         console.log(`     💾 已保存单独文件: ${safeFileName} (${singleSourceData.length} 篇)`);
-        // ================================================
 
         successCount++;
         return articles;
       } catch (err) {
-        console.error(`  ❌ 失败: ${url} - ${err.message}`);
+        const msg = `${url} - ${err.message}`;
+        console.error(`  ❌ 失败: ${msg}`);
+        errors.push(msg);
         failCount++;
         return [];
       }
@@ -265,7 +298,6 @@ async function main() {
     }
   });
 
-  // 排序健壮性优化：处理不合法的日期，避免 NaN 导致排序混乱
   allArticles.sort((a, b) => {
     const timeA = a.date ? new Date(a.date).getTime() : 0;
     const timeB = b.date ? new Date(b.date).getTime() : 0;
@@ -274,7 +306,6 @@ async function main() {
     return tB - tA;
   });
 
-  // 截取并优化最终的字段（切除过长文本，防止前端加载的 JSON 太大）
   const topArticles = allArticles.slice(0, MAX_ARTICLES).map(item => ({
     title: item.title,
     author: item.author,
@@ -291,9 +322,19 @@ async function main() {
   console.log(`📝 共聚合 ${allArticles.length} 篇文章，保留最新 ${topArticles.length} 篇`);
   console.log(`💾 聚合输出文件: ${outputPath}`);
   console.log(`📁 各源单独文件保存在: ${outputDir}`);
+
+  // ========== BetterStack 心跳上报 ==========
+  const overallSuccess = failCount === 0 && successCount > 0;
+  const failureOutput = errors.length > 0
+    ? `失败 ${failCount} 个源:\n${errors.join('\n')}`
+    : '';
+
+  await reportHeartbeat(overallSuccess, failureOutput);
+  // ==========================================
 }
 
-main().catch((err) => {
+main().catch(async (err) => {
   console.error('❌ 执行失败:', err);
+  await reportHeartbeat(false, err.message);
   process.exit(1);
 });
