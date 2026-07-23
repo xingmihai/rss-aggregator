@@ -4,7 +4,7 @@
     "author": "星觅海的博客",
     "auther": "星觅海的博客",
     "date": "2026-07-21T00:00:00.000Z",
-    "link": "https://www.xmhai.cn/#/post/xmh-mdui-tutorial",
+    "link": "https://www.xmhai.cn/post/xmh-mdui-tutorial/",
     "content": "详细介绍如何使用 xmh-mdui 搭建个人博客，包括写作、自定义语法、部署等完整流程。"
   },
   {
@@ -12,7 +12,7 @@
     "author": "星觅海的博客",
     "auther": "星觅海的博客",
     "date": "2026-07-20T00:00:00.000Z",
-    "link": "https://www.xmhai.cn/#/post/MDX-article-tutorial",
+    "link": "https://www.xmhai.cn/post/MDX-article-tutorial/",
     "content": "一篇展示 MDX 组件用法的示例文章，包含提示框、卡片和多栏布局"
   },
   {
@@ -20,7 +20,7 @@
     "author": "星觅海的博客",
     "auther": "星觅海的博客",
     "date": "2026-07-20T00:00:00.000Z",
-    "link": "https://www.xmhai.cn/#/post/markdown-tutorial",
+    "link": "https://www.xmhai.cn/post/markdown-tutorial/",
     "content": "全面介绍本博客支持的 Markdown 语法，从基础排版到高级图表一应俱全"
   },
   {
@@ -28,7 +28,7 @@
     "author": "星觅海的博客",
     "auther": "星觅海的博客",
     "date": "2026-07-20T00:00:00.000Z",
-    "link": "https://www.xmhai.cn/#/post/mdui-component",
+    "link": "https://www.xmhai.cn/post/mdui-component/",
     "content": "本文展示了 MDUI v2 中各类组件的实际效果，包括按钮、卡片、输入框、列表、进度条、对话框等，方便快速查阅组件样式。"
   },
   {
@@ -36,7 +36,7 @@
     "author": "星觅海的博客",
     "auther": "星觅海的博客",
     "date": "2026-07-20T00:00:00.000Z",
-    "link": "https://www.xmhai.cn/#/post/mermaid-showcase",
+    "link": "https://www.xmhai.cn/post/mermaid-showcase/",
     "content": "展示博客支持的所有 Mermaid 图表类型，从流程图到思维导图一应俱全"
   },
   {
@@ -44,7 +44,7 @@
     "author": "星觅海的博客",
     "auther": "星觅海的博客",
     "date": "2026-07-20T00:00:00.000Z",
-    "link": "https://www.xmhai.cn/#/post/plantuml-showcase",
+    "link": "https://www.xmhai.cn/post/plantuml-showcase/",
     "content": "展示博客支持的所有 PlantUML 图表类型，从 UML 到思维导图一应俱全"
   },
   {
@@ -60,8 +60,8 @@
     "author": "星觅海的博客",
     "auther": "星觅海的博客",
     "date": "2026-06-21T18:36:00.000Z",
-    "link": "https://www.xmhai.cn/#/post/202606211836",
-    "content": ""
+    "link": "https://www.xmhai.cn/post/202606211836/",
+    "content": "<video src=\"https://save.xmhai.cn/raw/fmp4/20260621/master.m3u8\" controls </video"
   },
   {
     "title": "弄了一个专为vh-astro博客设计的友链管理系统，把烦人操作全扔了",
@@ -76,24 +76,24 @@
     "author": "星觅海的博客",
     "auther": "星觅海的博客",
     "date": "2026-06-14T00:00:00.000Z",
-    "link": "https://www.xmhai.cn/#/post/Ten-Year-Pact",
-    "content": "## 十年之约 ### 效果 --- ### 关于 这是一个记录十年时光流逝的动态进度卡片。从 **2026年6月14日** 开始，到 **2036年6月14日** 结束，整整"
+    "link": "https://www.xmhai.cn/post/Ten-Year-Pact/",
+    "content": "十年之约 效果 <object data=\"/assets/images/ten_year_promise.svg\" type=\"image/svg+xml\" width=\"250\" height=\"250\" </object --- 关于 这是一个记录十年时光流逝的动态进度卡片。从 2026年6月14日 开始，到 2036年6月14日 结束，整整十年的约定。 --- 技术说明 - 格式 ：SVG"
   },
   {
     "title": "没错，我的博客的评论没了",
     "author": "星觅海的博客",
     "auther": "星觅海的博客",
     "date": "2026-06-13T22:50:00.000Z",
-    "link": "https://www.xmhai.cn/#/post/202606132250",
-    "content": "## 前言 我用的是 [Waline](https://github.com/walinejs/waline) 评论系统，之前部署在 [Netlify](https://app.netlify.com/) 上，存储好像用的是 [MongoDB](https://mongodb.com/) —— 忘了🤪 一段时间没管，也不知道干了什么： - 邮件通知挂了 - 评论加载特别慢 干脆重新在 [V"
+    "link": "https://www.xmhai.cn/post/202606132250/",
+    "content": "前言 我用的是 Waline https://github.com/walinejs/waline 评论系统，之前部署在 Netlify https://app.netlify.com/ 上，存储好像用的是 MongoDB https://mongodb.com/ —— 忘了🤪 一段时间没管，也不知道干了什么： - 邮件通知挂了 - 评论加载特别慢 干脆重新在 Vercel https://ve"
   },
   {
     "title": "优雅的 Cloudflare R2 网盘文件库",
     "author": "星觅海的博客",
     "auther": "星觅海的博客",
     "date": "2026-06-13T09:23:00.000Z",
-    "link": "https://www.xmhai.cn/#/post/Cloudflare-R2",
-    "content": "## FlareDrive-R2 Worker 部署指南 ### 🌟 项目简介 :::note 📌 本项目修改自 [Cloudflare-R2](https://github.com/willow-god/FlareDrive-R2/)，因为Cloudflare pages 优选太麻烦，所以有了此项目 ::: ## 前置要求 - Cloudflare 账号 - 已开通 Cloudfla"
+    "link": "https://www.xmhai.cn/post/Cloudflare-R2/",
+    "content": "FlareDrive-R2 Worker 部署指南 🌟 项目简介 :::note 📌 本项目修改自 Cloudflare-R2 https://github.com/willow-god/FlareDrive-R2/ ，因为Cloudflare pages 优选太麻烦，所以有了此项目 ::: 前置要求 - Cloudflare 账号 - 已开通 Cloudflare R2 服务 部署步骤 1."
   },
   {
     "title": "我的网站被刷了 150G 流量——复盘与反思",
